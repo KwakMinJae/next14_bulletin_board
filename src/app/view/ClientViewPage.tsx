@@ -311,6 +311,43 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
     </ul>
   );
 
+  const renderAttachments = (attachments: string[]) => {
+    return attachments.map((attachment, index) => {
+      const isImage = attachment.match(/\.(jpeg|jpg|gif|png)$/i);
+      const isVideo = attachment.match(/\.(mp4|webm|ogg)$/i);
+      const isPDF = attachment.match(/\.pdf$/i);  // PDF 처리
+      const isOther = !isImage && !isVideo && !isPDF;
+  
+      if (isImage) {
+        return (
+          <img
+            key={index}
+            src={attachment}
+            alt={`attachment-${index}`}
+            style={{ maxWidth: '100%', height: 'auto', marginBottom: '10px' }}
+          />
+        );
+      } else if (isVideo) {
+        return (
+          <video key={index} controls style={{ maxWidth: '100%', height: 'auto', marginBottom: '10px' }}>
+            <source src={attachment} type="video/mp4" />
+            브라우저가 비디오를 지원하지 않습니다.
+          </video>
+        );
+      } else if (isPDF) {
+        return (
+          <a key={index} href={attachment} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginBottom: '10px' }}>
+            PDF 파일 열기
+          </a>
+        );
+      } else if (isOther) {
+        return (
+          <p key={index}>지원하지 않는 파일 형식입니다: {attachment}</p>
+        );
+      }
+    });
+  };
+
   if (!board) return <div>게시글을 찾을 수 없습니다.</div>;
 
   return (
@@ -329,6 +366,14 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
         <div>
           <strong>내용: </strong> {board.content}
         </div>
+        {board.attachments && board.attachments.length > 0 ? (
+  <div>
+    <h3>첨부된 파일</h3>
+    {renderAttachments(board.attachments)}
+  </div>
+) : (
+  <p>첨부된 파일이 없습니다.</p>
+)}
       </div>
       <button type="button" onClick={handleModify}>수정</button>
       <button type="button" onClick={handleDelete}>삭제</button>
