@@ -77,13 +77,23 @@ export default function WritePage() {
 
     // 파일을 Base64로 변환하여 미리보기
     try {
+      // const previews = await Promise.all(validFiles.map(file => fileToBase64(file)));
+      // setAttachments(validFiles);
+      // setAttachmentPreviews(previews);
+      // setError(null);
       const previews = await Promise.all(validFiles.map(file => fileToBase64(file)));
-      setAttachments(validFiles);
-      setAttachmentPreviews(previews);
+      setAttachments(prev => [...prev, ...validFiles]); // 새로운 파일을 추가
+      setAttachmentPreviews(prev => [...prev, ...previews]); // 새로운 미리보기도 추가
       setError(null);
     } catch (err) {
       setError('파일 변환 중 오류가 발생했습니다.');
     }
+  };
+
+  // 첨부된 파일 삭제 처리
+  const handleRemoveAttachment = (indexToRemove: number) => {
+    setAttachments(prev => prev.filter((_, index) => index !== indexToRemove));
+    setAttachmentPreviews(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   // 폼 제출 핸들러
@@ -174,13 +184,14 @@ export default function WritePage() {
               )}
             </div>
           ))} */}
-                    {attachmentPreviews.map((preview, index) => (
+            {attachmentPreviews.map((preview, index) => (
             <div key={index}>
               {attachments[index].type.startsWith('image') ? (
                 <img src={preview} alt={`attachment-${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
               ) : (
                 <video src={preview} controls style={{ maxWidth: '200px', maxHeight: '200px' }} />
               )}
+              <button type="button" onClick={() => handleRemoveAttachment(index)}>삭제</button>
             </div>
           ))}
         </div>

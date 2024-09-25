@@ -13,7 +13,7 @@ const ViewPage = () => {
 
   useEffect(() => {
     const index = searchParams.get('index'); // Extract index from search params
-    console.log("11",index);
+    console.log(index);
     
     if (index !== null) {
       const boards: Board[] = getBoardsFromLocalStorage();

@@ -117,7 +117,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { useReactTable, ColumnDef, getCoreRowModel, flexRender } from '@tanstack/react-table';
+import { useReactTable, ColumnDef, getCoreRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table';
 import { getBoardsFromLocalStorage } from '../utils/storage';
 import { Board } from '../types/types';
 import Link from 'next/link';
@@ -126,6 +126,7 @@ const columns: ColumnDef<Board>[] = [
   {
     accessorKey: 'index',
     header: '번호',
+    cell: info => (info.getValue() as number) + 1,
   },
   {
     accessorKey: 'subject',
@@ -152,21 +153,40 @@ const columns: ColumnDef<Board>[] = [
 
 const HomePage = () => {
   const [boards, setBoards] = useState<Board[]>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
 
   useEffect(() => {
-    // 클라이언트 사이드에서 데이터 로드
-    setBoards(getBoardsFromLocalStorage());
+    const loadedBoards = getBoardsFromLocalStorage();
+    const sortedBoards = loadedBoards.sort((a, b) => b.index - a.index);
+    setBoards(sortedBoards);
   }, []);
 
+  // 테이블 생성
   const table = useReactTable({
     data: boards,
     columns,
+    state: {
+      globalFilter,
+    },
+    globalFilterFn: (row, columnId) => {
+      const cellValue = row.getValue(columnId);
+      if (typeof cellValue === 'number') {
+        return cellValue.toString().includes(globalFilter);
+      }
+      return String(cellValue).toLowerCase().includes(globalFilter.toLowerCase());
+    },
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
     <div>
       <h2>게시판 리스트</h2>
+      <input
+        value={globalFilter}
+        onChange={e => setGlobalFilter(e.target.value)}
+        placeholder="검색..."
+      />
       <table>
         <thead>
           {table.getHeaderGroups().map(headerGroup => (
@@ -191,6 +211,26 @@ const HomePage = () => {
           ))}
         </tbody>
       </table>
+      <div>
+        <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
+          {'<<'}
+        </button>
+        <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+          {'<'}
+        </button>
+        <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          {'>'}
+        </button>
+        <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}>
+          {'>>'}
+        </button>
+        <span>
+          Page{' '}
+          <strong>
+            {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          </strong>
+        </span>
+      </div>
       <Link href="/write">글 쓰기</Link>
     </div>
   );

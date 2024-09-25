@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Board } from '../../types/types';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getBoardsFromLocalStorage, setBoardsToLocalStorage } from '../../utils/storage';
 
@@ -57,15 +57,44 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   const [editReplyContent, setEditReplyContent] = useState<string>(''); // 추가된 부분
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const index = board?.index;
-
+  const searchParams = useSearchParams();
+  
   useEffect(() => {
     if (index !== undefined) {
       const storedComments = localStorage.getItem(`comments_${index}`);
       if (storedComments) {
         setComments(JSON.parse(storedComments));
       }
+  
+      const boardsObj = getBoardsFromLocalStorage(); 
+      const currentBoard = boardsObj[index]; // 현재 보드 가져오기
+  
+      // 새로고침 여부를 확인하기 위한 localStorage 키
+      const refreshKey = `board_refresh_${index}`; // index를 사용하여 refreshKey 생성
+      const isRefreshed = localStorage.getItem(refreshKey);
+  
+      const writeMode = searchParams.get('writeMode');
+
+      const viewCount = () => {
+        // 새로고침 여부가 없을 때만 조회수 증가
+        if (!writeMode && !isRefreshed) {
+          currentBoard.views++;
+          localStorage.setItem(refreshKey, 'true'); // 조회수 증가 후 새로고침 기록
+        }
+        
+        // 업데이트된 boards 저장
+        const updatedBoardsStr = JSON.stringify(boardsObj);
+        localStorage.setItem("boards", updatedBoardsStr);
+      };
+  
+      viewCount(); // 조회수 증가 함수 호출
+  
+      // 다른 글을 클릭할 경우 refreshKey 초기화
+      return () => {
+        localStorage.removeItem(refreshKey); // 현재 보드의 refreshKey를 삭제
+      };
     }
-  }, [index]);
+  }, [index]); // index가 변경될 때마다 호출
 
   const handleModify = () => {
     if (board) {
@@ -313,8 +342,8 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
 
   const renderAttachments = (attachments: string[]) => {
     return attachments.map((attachment, index) => {
-      const isImage = attachment.match(/\.(jpeg|jpg|gif|png)$/i);
-      const isVideo = attachment.match(/\.(mp4|webm|ogg)$/i);
+      const isImage = attachment.match(/\.(jpeg|jpg|gif|png)$/i) || attachment.startsWith('data:image');
+      const isVideo = attachment.match(/\.(mp4|webm|ogg)$/i) || attachment.startsWith('data:video');
       const isPDF = attachment.match(/\.pdf$/i);  // PDF 처리
       const isOther = !isImage && !isVideo && !isPDF;
   
@@ -356,6 +385,9 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
       <div>
         <div>
           <strong>제목: </strong> {board.subject}
+        </div>
+        <div>
+          <strong>조회수: </strong> {board.views}
         </div>
         <div>
           <strong>작성자: </strong> {board.writer}
