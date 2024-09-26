@@ -114,46 +114,78 @@
 // }
 
 // app/page.tsx
-"use client"
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useReactTable, ColumnDef, getCoreRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table';
-import { getBoardsFromLocalStorage } from '../utils/storage';
-import { Board } from '../types/types';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import {
+  useReactTable,
+  ColumnDef,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  getFilteredRowModel, // 필터링 관련 로우 모델 추가
+  FilterFn,
+} from "@tanstack/react-table";
+import { getBoardsFromLocalStorage } from "../utils/storage";
+import { Board } from "../types/types";
+import Link from "next/link";
+import { rankItem } from "@tanstack/match-sorter-utils"; // Fuzzy Search를 위한 유틸리티
 
+// 테이블 컬럼 정의
 const columns: ColumnDef<Board>[] = [
   {
-    accessorKey: 'index',
-    header: '번호',
-    cell: info => (info.getValue() as number) + 1,
+    accessorKey: "index",
+    header: "번호",
+    cell: (info) => (info.getValue() as number) + 1,
   },
   {
-    accessorKey: 'subject',
-    header: '글제목',
-    cell: info => (
+    accessorKey: "subject",
+    header: "글제목",
+    cell: (info) => (
       <Link href={`/view?index=${info.row.original.index}`}>
         {info.getValue() as string}
       </Link>
     ),
   },
   {
-    accessorKey: 'writer',
-    header: '작성자',
+    accessorKey: "writer",
+    header: "작성자",
   },
   {
-    accessorKey: 'date',
-    header: '등록일',
+    accessorKey: "date",
+    header: "등록일",
   },
   {
-    accessorKey: 'views',
-    header: '조회수',
+    accessorKey: "views",
+    header: "조회수",
   },
 ];
 
+// Fuzzy Search 필터 함수
+// const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
+//   const itemRank = rankItem(row.getValue(columnId), value);
+//   console.log("테스트",itemRank);
+  
+//   return itemRank.passed;
+// };
+const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
+  // subject와 writer만 필터링
+  if (columnId === "subject" || columnId === "writer") {
+    const cellValue = row.getValue(columnId);
+    console.log(cellValue);
+    
+    // Fuzzy Search 또는 기본 검색 로직
+    if (typeof cellValue === 'string') {
+      return cellValue.toLowerCase().includes(value.toLowerCase());
+    }
+  }
+
+  return false; // 다른 열은 필터링하지 않음
+};
+
 const HomePage = () => {
   const [boards, setBoards] = useState<Board[]>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   useEffect(() => {
     const loadedBoards = getBoardsFromLocalStorage();
@@ -168,15 +200,11 @@ const HomePage = () => {
     state: {
       globalFilter,
     },
-    globalFilterFn: (row, columnId) => {
-      const cellValue = row.getValue(columnId);
-      if (typeof cellValue === 'number') {
-        return cellValue.toString().includes(globalFilter);
-      }
-      return String(cellValue).toLowerCase().includes(globalFilter.toLowerCase());
-    },
+    globalFilterFn: fuzzyFilter, // Fuzzy Filter 함수 설정
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(), // 필터링된 행 모델을 적용
+    // enableGlobalFilter: true, 
   });
 
   return (
@@ -184,14 +212,14 @@ const HomePage = () => {
       <h2>게시판 리스트</h2>
       <input
         value={globalFilter}
-        onChange={e => setGlobalFilter(e.target.value)}
+        onChange={(e) => setGlobalFilter(e.target.value)}
         placeholder="검색..."
       />
       <table>
         <thead>
-          {table.getHeaderGroups().map(headerGroup => (
+          {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
+              {headerGroup.headers.map((header) => (
                 <th key={header.id}>
                   {flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
@@ -200,9 +228,9 @@ const HomePage = () => {
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.map(row => (
+          {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
-              {row.getVisibleCells().map(cell => (
+              {row.getVisibleCells().map((cell) => (
                 <td key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
@@ -213,19 +241,19 @@ const HomePage = () => {
       </table>
       <div>
         <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
-          {'<<'}
+          {"<<"}
         </button>
         <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-          {'<'}
+          {"<"}
         </button>
         <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-          {'>'}
+          {">"}
         </button>
         <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}>
-          {'>>'}
+          {">>"}
         </button>
         <span>
-          Page{' '}
+          Page{" "}
           <strong>
             {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </strong>
