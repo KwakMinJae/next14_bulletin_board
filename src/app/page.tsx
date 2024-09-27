@@ -130,6 +130,8 @@ import { getBoardsFromLocalStorage } from "../utils/storage";
 import { Board } from "../types/types";
 import Link from "next/link";
 import { rankItem } from "@tanstack/match-sorter-utils"; // Fuzzy Search를 위한 유틸리티
+import AuthButton from "./components/AuthButton";
+import PostForm from "./components/PostForm";
 
 // 테이블 컬럼 정의
 const columns: ColumnDef<Board>[] = [
@@ -209,6 +211,8 @@ const HomePage = () => {
 
   return (
     <div>
+      <AuthButton />
+      <PostForm />
       <h2>게시판 리스트</h2>
       <input
         value={globalFilter}
