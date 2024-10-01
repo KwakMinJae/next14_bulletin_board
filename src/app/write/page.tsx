@@ -1,10 +1,14 @@
 "use client"; // 클라이언트 컴포넌트로 명시
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getBoardsFromLocalStorage, setBoardsToLocalStorage } from '../../utils/storage';
 import { Board } from '../../types/types';
 import Link from 'next/link';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc } from 'firebase/firestore';
+import { db, auth, storage } from '../../../firebaseConfig'; // Firestore 추가
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // 파일을 Base64로 변환하는 함수
 const fileToBase64 = (file: File): Promise<string> => {
@@ -27,7 +31,18 @@ export default function WritePage() {
   const [error, setError] = useState<string | null>(null);
   
   const router = useRouter();
+  useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+          if (currentUser) {
+              setWriter(currentUser.email || ''); // 로그인한 사용자의 이메일을 작성자로 설정
+          } else {
+              setWriter('');
+          }
+      });
 
+      return () => unsubscribe();
+  }, []);
+  
   // 현재 날짜와 시간을 YYYY-MM-DD HH:mm:ss 형식으로 반환
   const recordDate = (): string => {
     const date = new Date();
@@ -81,6 +96,7 @@ export default function WritePage() {
       // setAttachments(validFiles);
       // setAttachmentPreviews(previews);
       // setError(null);
+      
       const previews = await Promise.all(validFiles.map(file => fileToBase64(file)));
       setAttachments(prev => [...prev, ...validFiles]); // 새로운 파일을 추가
       setAttachmentPreviews(prev => [...prev, ...previews]); // 새로운 미리보기도 추가
@@ -97,7 +113,7 @@ export default function WritePage() {
   };
 
   // 폼 제출 핸들러
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     try {
@@ -121,6 +137,7 @@ export default function WritePage() {
 
       // 새로운 게시글 추가 후 로컬스토리지 업데이트
       setBoardsToLocalStorage([...boards, newBoard]);
+      await addDoc(collection(db, 'boards'), newBoard);
 
       // 새로 작성된 게시글로 이동
       router.push(`/view?index=${newBoard.index}&writeMode=true`);

@@ -25,6 +25,8 @@
 // Import the necessary Firebase modules
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -40,6 +42,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Set up providers
 const googleProvider = new GoogleAuthProvider();
@@ -56,4 +60,4 @@ export const signInWithGitHub = () => {
 };
 
 // Export auth object
-export { auth };
+export { auth, db, storage };
