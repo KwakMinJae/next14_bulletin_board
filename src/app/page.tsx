@@ -129,9 +129,9 @@ import {
 import { getBoardsFromLocalStorage } from "../utils/storage";
 import { Board } from "../types/types";
 import Link from "next/link";
-import { rankItem } from "@tanstack/match-sorter-utils"; // Fuzzy Search를 위한 유틸리티
-import AuthButton from "./components/AuthButton";
-import PostForm from "./components/PostForm";
+import { auth } from "../../firebaseConfig";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { signInWithGoogle, signInWithGitHub } from "../../firebaseConfig";
 
 // 테이블 컬럼 정의
 const columns: ColumnDef<Board>[] = [
@@ -163,13 +163,6 @@ const columns: ColumnDef<Board>[] = [
   },
 ];
 
-// Fuzzy Search 필터 함수
-// const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
-//   const itemRank = rankItem(row.getValue(columnId), value);
-//   console.log("테스트",itemRank);
-  
-//   return itemRank.passed;
-// };
 const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
   // subject와 writer만 필터링
   if (columnId === "subject" || columnId === "writer") {
@@ -188,11 +181,22 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
 const HomePage = () => {
   const [boards, setBoards] = useState<Board[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [user, setUser] = useState<User | null>(null); // Update the state type
 
   useEffect(() => {
     const loadedBoards = getBoardsFromLocalStorage();
     const sortedBoards = loadedBoards.sort((a, b) => b.index - a.index);
     setBoards(sortedBoards);
+  }, []);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    // Clean up the subscription
+    return () => unsubscribe();
   }, []);
 
   // 테이블 생성
@@ -209,10 +213,83 @@ const HomePage = () => {
     // enableGlobalFilter: true, 
   });
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Redirect or update UI upon successful login
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithGoogle();
+      // Redirect or update UI upon successful login
+    } catch (error) {
+      console.error("Google login failed:", error);
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    try {
+      await signInWithGitHub();
+      // Redirect or update UI upon successful login
+    } catch (error) {
+      console.error("GitHub login failed:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); // Sign out the user
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const pageButtons = [
+    { label: "<<", onClick: () => table.setPageIndex(0), disabled: !table.getCanPreviousPage() },
+    { label: "<", onClick: () => table.previousPage(), disabled: !table.getCanPreviousPage() },
+    { label: ">", onClick: () => table.nextPage(), disabled: !table.getCanNextPage() },
+    { label: ">>", onClick: () => table.setPageIndex(table.getPageCount() - 1), disabled: !table.getCanNextPage() },
+  ];
+
+  // if (boards.length === 0) {
+  //   return <div>게시글이 없습니다.</div>;
+  // }
+  
   return (
     <div>
-      <AuthButton />
-      <PostForm />
+      <div>
+        {user ? ( // Check if a user is authenticated
+          <div>
+            <p>Welcome, {user.displayName || user.email}!</p>
+            <button onClick={handleLogout}>Logout</button>
+          </div>
+        ) : (
+          <div>
+            <form onSubmit={handleLogin}>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="Email" 
+              />
+              <input 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="Password" 
+              />
+              <button type="submit">Login</button>
+            </form>
+            <button onClick={handleGoogleLogin}>Login with Google</button>
+            <button onClick={handleGitHubLogin}>Login with GitHub</button>
+          </div>
+        )}
+      </div>
       <h2>게시판 리스트</h2>
       <input
         value={globalFilter}
@@ -244,24 +321,11 @@ const HomePage = () => {
         </tbody>
       </table>
       <div>
-        <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
-          {"<<"}
-        </button>
-        <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-          {"<"}
-        </button>
-        <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-          {">"}
-        </button>
-        <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}>
-          {">>"}
-        </button>
-        <span>
-          Page{" "}
-          <strong>
-            {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-          </strong>
-        </span>
+        {pageButtons.map((btn) => (
+          <button key={btn.label} onClick={btn.onClick} disabled={btn.disabled}>
+            {btn.label}
+          </button>
+        ))}
       </div>
       <Link href="/write">글 쓰기</Link>
     </div>
