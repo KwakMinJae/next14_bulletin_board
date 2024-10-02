@@ -129,9 +129,10 @@ import {
 import { getBoardsFromLocalStorage } from "../utils/storage";
 import { Board } from "../types/types";
 import Link from "next/link";
-import { auth } from "../../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { signInWithGoogle, signInWithGitHub } from "../../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore"; // Firestore에서 데이터를 가져오기 위한 함수
 
 // 테이블 컬럼 정의
 const columns: ColumnDef<Board>[] = [
@@ -184,18 +185,36 @@ const HomePage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState<User | null>(null); // Update the state type
+  const [nickname, setNickname] = useState<string | null>(null); // 닉네임 상태 추가
 
   useEffect(() => {
     const loadedBoards = getBoardsFromLocalStorage();
     const sortedBoards = loadedBoards.sort((a, b) => b.index - a.index);
     setBoards(sortedBoards);
   }, []);
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+  //     setUser(currentUser);
+  //   });
+
+  //   // Clean up the subscription
+  //   return () => unsubscribe();
+  // }, []);
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        // Firestore에서 유저의 닉네임 가져오기
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setNickname(userDoc.data()?.nickname || null); // Firestore에 저장된 닉네임 설정
+        }
+      } else {
+        setNickname(null);
+      }
     });
 
-    // Clean up the subscription
     return () => unsubscribe();
   }, []);
 
@@ -259,36 +278,41 @@ const HomePage = () => {
   // if (boards.length === 0) {
   //   return <div>게시글이 없습니다.</div>;
   // }
+  console.log(db);
   
   return (
     <div>
       <div>
         {user ? ( // Check if a user is authenticated
           <div>
-            <p>Welcome, {user.displayName || user.email}!</p>
+            <p>Welcome, {nickname ? nickname : user.email}!</p>
             <button onClick={handleLogout}>Logout</button>
           </div>
         ) : (
+          // <div>
+          //   <form onSubmit={handleLogin}>
+          //     <input 
+          //       type="email" 
+          //       value={email} 
+          //       onChange={(e) => setEmail(e.target.value)} 
+          //       placeholder="Email" 
+          //     />
+          //     <input 
+          //       type="password" 
+          //       value={password} 
+          //       onChange={(e) => setPassword(e.target.value)} 
+          //       placeholder="Password" 
+          //     />
+          //     <button type="submit">Login</button>
+          //   </form>
+          //   <button onClick={handleGoogleLogin}>Login with Google</button>
+          //   <button onClick={handleGitHubLogin}>Login with GitHub</button>
+          // </div>
           <div>
-            <form onSubmit={handleLogin}>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="Email" 
-              />
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="Password" 
-              />
-              <button type="submit">Login</button>
-            </form>
-            <button onClick={handleGoogleLogin}>Login with Google</button>
-            <button onClick={handleGitHubLogin}>Login with GitHub</button>
+            <Link href="./sign_in">로그인</Link>
           </div>
         )}
+        <Link href="./sign_up">회원가입</Link>
       </div>
       <h2>게시판 리스트</h2>
       <input

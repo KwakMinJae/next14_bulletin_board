@@ -9,12 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@firebasegen/default": "file:generated/javascript/default",
+    "@sendgrid/mail": "^8.1.3",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/react-table": "^8.20.5",
     "@types/next-auth": "^3.15.0",
+    "express": "^4.21.0",
     "firebase": "^10.14.0",
     "next": "14.2.6",
     "next-auth": "^4.24.8",
+    "nodemailer": "^6.9.15",
     "react": "^18",
     "react-dom": "^18"
   },
