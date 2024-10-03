@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword, onAuthStateChanged, User } from "firebase/a
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../../firebaseConfig"; // Firestore와 Firebase Auth 가져오기
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const LoginPage = () => {
     const router = useRouter();
@@ -75,6 +76,8 @@ const LoginPage = () => {
             </div>
             <button type="submit">로그인</button>
         </form>
+            <Link href="../../find_id">아이디 찾기</Link>
+            <Link href="../../password_reset">비밀번호 재설정</Link>
         </div>
     );
     };
