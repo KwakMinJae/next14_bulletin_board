@@ -130,9 +130,8 @@ import { getBoardsFromLocalStorage } from "../utils/storage";
 import { Board } from "../types/types";
 import Link from "next/link";
 import { auth, db } from "../../firebaseConfig";
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { signInWithGoogle, signInWithGitHub } from "../../firebaseConfig";
-import { doc, getDoc } from "firebase/firestore"; // Firestore에서 데이터를 가져오기 위한 함수
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { doc, getDoc, collection, getDocs } from "firebase/firestore"; // Firestore에서 데이터를 가져오기 위한 함수
 
 // 테이블 컬럼 정의
 const columns: ColumnDef<Board>[] = [
@@ -182,24 +181,36 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
 const HomePage = () => {
   const [boards, setBoards] = useState<Board[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [user, setUser] = useState<User | null>(null); // Update the state type
   const [nickname, setNickname] = useState<string | null>(null); // 닉네임 상태 추가
 
-  useEffect(() => {
-    const loadedBoards = getBoardsFromLocalStorage();
-    const sortedBoards = loadedBoards.sort((a, b) => b.index - a.index);
-    setBoards(sortedBoards);
-  }, []);
   // useEffect(() => {
-  //   const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-  //     setUser(currentUser);
-  //   });
-
-  //   // Clean up the subscription
-  //   return () => unsubscribe();
+  //   const loadedBoards = getBoardsFromLocalStorage();
+  //   const sortedBoards = loadedBoards.sort((a, b) => b.index - a.index);
+  //   setBoards(sortedBoards);
   // }, []);
+  // Firestore에서 게시글 데이터 가져오기
+  useEffect(() => {
+    const fetchBoardsFromFirestore = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "boards")); // Firestore에서 "boards" 컬렉션의 문서 가져오기
+        const boardsData: Board[] = querySnapshot.docs.map((doc, index) => ({
+          index: index, // 게시글 번호
+          subject: doc.data().subject,
+          writer: doc.data().writer,
+          date: doc.data().date,
+          views: doc.data().views,
+          content: doc.data().content, // content 필드를 추가
+          refresh: doc.data().refresh, // refresh 필드를 추가
+        }));
+        setBoards(boardsData); // 가져온 데이터를 상태에 저장
+      } catch (error) {
+        console.error("Error fetching boards from Firestore:", error);
+      }
+    };
+
+    fetchBoardsFromFirestore(); // Firestore에서 데이터 불러오기
+  }, []);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -232,34 +243,6 @@ const HomePage = () => {
     // enableGlobalFilter: true, 
   });
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Redirect or update UI upon successful login
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await signInWithGoogle();
-      // Redirect or update UI upon successful login
-    } catch (error) {
-      console.error("Google login failed:", error);
-    }
-  };
-
-  const handleGitHubLogin = async () => {
-    try {
-      await signInWithGitHub();
-      // Redirect or update UI upon successful login
-    } catch (error) {
-      console.error("GitHub login failed:", error);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await signOut(auth); // Sign out the user
@@ -286,28 +269,9 @@ const HomePage = () => {
         {user ? ( // Check if a user is authenticated
           <div>
             <p>Welcome, {nickname ? nickname : user.email}!</p>
-            <button onClick={handleLogout}>Logout</button>
+            <button onClick={handleLogout}>로그아웃</button>
           </div>
         ) : (
-          // <div>
-          //   <form onSubmit={handleLogin}>
-          //     <input 
-          //       type="email" 
-          //       value={email} 
-          //       onChange={(e) => setEmail(e.target.value)} 
-          //       placeholder="Email" 
-          //     />
-          //     <input 
-          //       type="password" 
-          //       value={password} 
-          //       onChange={(e) => setPassword(e.target.value)} 
-          //       placeholder="Password" 
-          //     />
-          //     <button type="submit">Login</button>
-          //   </form>
-          //   <button onClick={handleGoogleLogin}>Login with Google</button>
-          //   <button onClick={handleGitHubLogin}>Login with GitHub</button>
-          // </div>
           <div>
             <Link href="./sign_in">로그인</Link>
           </div>
@@ -351,7 +315,7 @@ const HomePage = () => {
           </button>
         ))}
       </div>
-      <Link href="/write">글 쓰기</Link>
+      <Link href="./write">글 쓰기</Link>
     </div>
   );
 };

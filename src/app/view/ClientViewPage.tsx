@@ -5,7 +5,8 @@ import { Board } from '../../types/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getBoardsFromLocalStorage, setBoardsToLocalStorage } from '../../utils/storage';
-
+import { db } from '../../../firebaseConfig';  // Firestore 인스턴스
+import { collection, query, where, getDocs } from 'firebase/firestore';
 interface ClientViewPageProps {
   board: Board | null;
 }
