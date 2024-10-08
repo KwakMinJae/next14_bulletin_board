@@ -2,69 +2,49 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Board } from '../../types/types';
-import { getBoardsFromLocalStorage, setBoardsToLocalStorage } from '../../utils/storage';
-
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve(reader.result as string);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
+import { fileToBase64, recordDate } from '@/utils/uttls';
+import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig';
+import { Board } from '@/types/types';
 
 const ModifyPage = () => {
   const [board, setBoard] = useState<Board | null>(null);
-  const [subject, setSubject] = useState('');
-  const [writer, setWriter] = useState('');
-  const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<string[]>([]);
   const searchParams = useSearchParams();
   const router = useRouter();
   const index = searchParams.get('index');
 
   useEffect(() => {
-    if (index) {
-      const boards = getBoardsFromLocalStorage();
-      const boardData = boards[Number(index)] || null;
-      setBoard(boardData);
-      if (boardData) {
-        setSubject(boardData.subject);
-        setWriter(boardData.writer);
-        setContent(boardData.content);
-        setAttachments(boardData.attachments || []);
+    const fetchBoard = async () => {
+      if (index !== null) {
+        const q = query(collection(db, 'boards'), where('index', '==', Number(index)));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const boardData = querySnapshot.docs[0].data() as Board;
+          setBoard(boardData);
+          setAttachments(boardData.attachments || []); // Attachments 설정
+        } else {
+          console.error('게시글을 찾을 수 없습니다.');
+        }
       }
-    }
+    };
+
+    fetchBoard();
   }, [index]);
 
-  const recordDate = (): string => {
-    const date = new Date();
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    const sec = String(date.getSeconds()).padStart(2, '0');
-
-    return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`;
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (board) {
-      if (!subject || !writer || !content) {
-        alert('모든 필드를 입력해 주세요.');
-        return;
-      }
+      const updatedBoard = { ...board, date: recordDate(), attachments }; // date 및 attachments 수정
+      const q = query(collection(db, 'boards'), where('index', '==', board.index));
+      const querySnapshot = await getDocs(q);
 
-      const updatedBoard = { ...board, subject, writer, content, date: recordDate(), attachments };
-      const boards = getBoardsFromLocalStorage();
-      boards[Number(index)] = updatedBoard;
-      setBoardsToLocalStorage(boards);
-      router.push(`/view?index=${index}`);
+      if (!querySnapshot.empty) {
+        const boardRef = doc(db, 'boards', querySnapshot.docs[0].id); // 업데이트할 문서 참조
+        await updateDoc(boardRef, updatedBoard); // Firestore에 게시글 업데이트
+        router.push(`/view?index=${index}`);
+      }
     }
   };
 
@@ -94,13 +74,13 @@ const ModifyPage = () => {
       <h2>글 수정</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          제목 : <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} />
+          제목 : <input type="text" value={board.subject} onChange={(e) => setBoard({ ...board, subject: e.target.value })} />
         </div>
         <div>
-          작성자 : <input type="text" value={writer} onChange={(e) => setWriter(e.target.value)} />
+          작성자 : <span>{board.writer}</span>
         </div>
         <div>
-          내용 : <textarea value={content} onChange={(e) => setContent(e.target.value)}></textarea>
+          내용 : <textarea value={board.content} onChange={(e) => setBoard({ ...board, content: e.target.value })}></textarea>
         </div>
         <div>
           첨부파일 : 

@@ -138,7 +138,8 @@ const columns: ColumnDef<Board>[] = [
   {
     accessorKey: "index",
     header: "번호",
-    cell: (info) => (info.getValue() as number) + 1,
+    // cell: (info) => (info.getValue() as number) + 1,
+    cell: (info) => (info.row.original.index + 1),
   },
   {
     accessorKey: "subject",
@@ -195,15 +196,19 @@ const HomePage = () => {
       try {
         const querySnapshot = await getDocs(collection(db, "boards")); // Firestore에서 "boards" 컬렉션의 문서 가져오기
         const boardsData: Board[] = querySnapshot.docs.map((doc, index) => ({
-          index: index, // 게시글 번호
+          index: doc.data().index, // 게시글 번호
           subject: doc.data().subject,
           writer: doc.data().writer,
           date: doc.data().date,
           views: doc.data().views,
+          userId: doc.data().userId,
           content: doc.data().content, // content 필드를 추가
           refresh: doc.data().refresh, // refresh 필드를 추가
         }));
-        setBoards(boardsData); // 가져온 데이터를 상태에 저장
+        // setBoards(boardsData); // 가져온 데이터를 상태에 저장
+        // index 기준으로 내림차순 정렬
+        const sortedBoards = boardsData.sort((a, b) => b.index - a.index);
+        setBoards(sortedBoards); // 내림차순으로 정렬된 데이터 저장
       } catch (error) {
         console.error("Error fetching boards from Firestore:", error);
       }
@@ -261,14 +266,14 @@ const HomePage = () => {
   // if (boards.length === 0) {
   //   return <div>게시글이 없습니다.</div>;
   // }
-  console.log(db);
+  // console.log(db);
   
   return (
     <div>
       <div>
         {user ? ( // Check if a user is authenticated
           <div>
-            <p>Welcome, {nickname ? nickname : user.email}!</p>
+            <p>Welcome, {nickname ? nickname : '로딩 중...'}!</p>
             <button onClick={handleLogout}>로그아웃</button>
           </div>
         ) : (
@@ -315,7 +320,17 @@ const HomePage = () => {
           </button>
         ))}
       </div>
-      <Link href="./write">글 쓰기</Link>
+      { user ? 
+        (
+        <div>
+          <Link href="./write">글 쓰기</Link>
+        </div>
+        ) : (
+        <div>
+          <Link href="./sign_in">글 쓰기</Link>
+        </div>
+        )
+      }
     </div>
   );
 };

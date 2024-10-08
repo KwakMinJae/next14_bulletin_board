@@ -30,6 +30,8 @@ const ViewPage = () => {
         // Firestore에서 해당 게시글 가져오기
         const q = query(collection(db, 'boards'), where('index', '==', Number(index)));
         const querySnapshot = await getDocs(q);
+        // console.log(querySnapshot.docs[0].data());
+        
         if (!querySnapshot.empty) {
           const boardData = querySnapshot.docs[0].data() as Board;
           setBoard(boardData);
@@ -41,7 +43,6 @@ const ViewPage = () => {
 
     fetchBoard();
   }, [searchParams]);
-
   return (
     <ClientViewPage board={board} />
   );

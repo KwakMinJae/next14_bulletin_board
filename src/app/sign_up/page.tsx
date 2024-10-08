@@ -3,6 +3,8 @@ import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/
 import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "../../../firebaseConfig";
 import { useState } from "react";
+import emailjs from "emailjs-com";
+import { service_id, template_id, user_id } from "../../../emailjs";
 
 const generateVerificationCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -75,14 +77,18 @@ export default function RegisterPage() {
         setVerificationCode(code);
         // Here you should integrate with an email sending service to send the `code` to the user's email
         console.log(`인증번호가 이메일로 전송되었습니다: ${code}`);
-  
+        const templateParams = {
+          to_email: email,
+          verification_code: code,
+        };
+        await emailjs.send(service_id ||'', template_id||'', templateParams, user_id||'');
         // Ask the user to enter the code
         alert("인증번호가 이메일로 전송되었습니다. 확인 후 입력해주세요.");
       } catch (error: unknown) {
         if (error instanceof Error) {
           setError("회원가입 실패: " + error.message);
         } else {
-          setError("회원가입 중 알 수 없는 오류가 발생했습니다.");
+          setError("회원가입 중 알 수 없는 오류가 발생했습니다.1");
         }
       }
     };
@@ -94,6 +100,7 @@ export default function RegisterPage() {
         try {
           await registerUser(userId, email, password, nickname);
           alert("회원가입이 완료되었습니다!");
+          
         } catch (error: unknown) {
           if (error instanceof Error) {
             setError("회원가입 실패: " + error.message);

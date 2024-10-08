@@ -5,57 +5,41 @@ import { useRouter } from 'next/navigation';
 import { getBoardsFromLocalStorage, setBoardsToLocalStorage } from '../../utils/storage';
 import { Board } from '../../types/types';
 import Link from 'next/link';
-import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { collection, addDoc, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db, auth, storage } from '../../../firebaseConfig'; // Firestore 추가
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-// 파일을 Base64로 변환하는 함수
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve(reader.result as string);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
+import { recordDate, fileToBase64 } from '@/utils/uttls';
 
 export default function WritePage() {
   const [subject, setSubject] = useState('');
-  const [writer, setWriter] = useState('');
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [nickname, setNickname] = useState<string | null>(null); 
   
   const router = useRouter();
   useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-          if (currentUser) {
-              setWriter(currentUser.email || ''); // 로그인한 사용자의 이메일을 작성자로 설정
-          } else {
-              setWriter('');
-          }
-      });
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        // Firestore에서 유저의 닉네임 가져오기
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setNickname(userDoc.data()?.nickname || null); // Firestore에 저장된 닉네임 설정
+        }
+      } else {
+        setNickname(null);
+      }
+    });
 
-      return () => unsubscribe();
+    return () => unsubscribe();
   }, []);
   
-  // 현재 날짜와 시간을 YYYY-MM-DD HH:mm:ss 형식으로 반환
-  const recordDate = (): string => {
-    const date = new Date();
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    const sec = String(date.getSeconds()).padStart(2, '0');
-
-    return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`;
-  };
-
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const files = Array.from(e.target.files || []);
   //   // setAttachments(files);
@@ -118,16 +102,29 @@ export default function WritePage() {
     
     try {
       if (subject.trim() === '') throw new Error('제목을 입력해주세요');
-      if (writer.trim() === '') throw new Error('작성자를 입력해주세요');
       if (content.trim() === '') throw new Error('내용을 입력해주세요');
+      if (!nickname) throw new Error('로그인된 사용자의 닉네임을 찾을 수 없습니다.');
 
-      const boards = getBoardsFromLocalStorage();
+      const boardsCollection = collection(db, 'boards');
+      const indexQuery = await getDocs(boardsCollection);
+    
+      let maxIndex = 0;
+      indexQuery.forEach((doc) => {
+        const data = doc.data();
+        if (data.index && data.index > maxIndex) {
+          maxIndex = data.index;
+        }
+      });
+  
+      const newIndex = maxIndex + 1;
+      const userId = user?.uid;
 
       // 새 Board 객체 생성
       const newBoard: Board = {
-        index: boards.length,
+        index: newIndex,
+        userId,
         subject,
-        writer,
+        writer: nickname,
         content,
         date: recordDate(),
         views: 0,
@@ -136,7 +133,7 @@ export default function WritePage() {
       };
 
       // 새로운 게시글 추가 후 로컬스토리지 업데이트
-      setBoardsToLocalStorage([...boards, newBoard]);
+      // setBoardsToLocalStorage([...boards, newBoard]);
       await addDoc(collection(db, 'boards'), newBoard);
 
       // 새로 작성된 게시글로 이동
@@ -164,11 +161,12 @@ export default function WritePage() {
         <div>
           <label>
             작성자:
-            <input
+            {/* <input
               type="text"
-              value={writer}
+              value={nickname}
               onChange={(e) => setWriter(e.target.value)}
-            />
+            /> */}
+            <span>{nickname}</span>
           </label>
         </div>
         <div>
