@@ -5,6 +5,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../../firebaseConfig"; // Firestore와 Firebase Auth 가져오기
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Icon from "../component/Icon";
 
 const LoginPage = () => {
     const router = useRouter();
@@ -53,31 +54,46 @@ const LoginPage = () => {
 
     return (
         <div>
-        <h2>로그인</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <form onSubmit={handleLogin}>
-            <div>
-            <label>User ID:</label>
-            <input
-                type="text"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                required
-            />
+            <div className="bg-gray-100">
+                <div className='mx-60'>
+                    <h2 className="ml-2 text-5xl font-bold text-blue-600/100 flex items-center py-4">
+                        Login
+                        <Icon name="cloud" className="w-20 h-20 ms-2" />
+                    </h2>
+                    {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
+                    <div>
+                        <form onSubmit={handleLogin}>
+                            <div>
+                            {/* <label htmlFor="userId">아이디: </label> */}
+                            <input
+                                placeholder="아이디"
+                                type="text"
+                                value={userId}
+                                onChange={(e) => setUserId(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-2"
+                                required
+                            />
+                            </div>
+                            <div>
+                            {/* <label>Password:</label> */}
+                            <input
+                                placeholder="비밀번호"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-2"
+                                required
+                            />
+                            </div>
+                            {error && <p style={{ color: "red" }}>{error}</p>}
+                            <button type="submit">로그인</button>
+                        </form>
+                        <Link href="../../sign_up">회원가입</Link>
+                        <Link href="../../find_id">아이디 찾기</Link>
+                        <Link href="../../password_reset">비밀번호 재설정</Link>
+                    </div>
+                </div>
             </div>
-            <div>
-            <label>Password:</label>
-            <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-            />
-            </div>
-            <button type="submit">로그인</button>
-        </form>
-            <Link href="../../find_id">아이디 찾기</Link>
-            <Link href="../../password_reset">비밀번호 재설정</Link>
         </div>
     );
     };

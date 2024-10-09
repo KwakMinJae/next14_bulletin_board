@@ -132,6 +132,7 @@ import Link from "next/link";
 import { auth, db } from "../../firebaseConfig";
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, getDoc, collection, getDocs } from "firebase/firestore"; // Firestore에서 데이터를 가져오기 위한 함수
+import Icon from "./component/Icon";
 
 // 테이블 컬럼 정의
 const columns: ColumnDef<Board>[] = [
@@ -144,11 +145,11 @@ const columns: ColumnDef<Board>[] = [
   {
     accessorKey: "subject",
     header: "글제목",
-    cell: (info) => (
-      <Link href={`/view?index=${info.row.original.index}`}>
-        {info.getValue() as string}
-      </Link>
-    ),
+    // cell: (info) => (
+    //   <Link href={`/view?index=${info.row.original.index}`}>
+    //     {info.getValue() as string}
+    //   </Link>
+    // ),
   },
   {
     accessorKey: "writer",
@@ -247,6 +248,8 @@ const HomePage = () => {
     getFilteredRowModel: getFilteredRowModel(), // 필터링된 행 모델을 적용
     // enableGlobalFilter: true, 
   });
+  const currentPageIndex = table.getState().pagination.pageIndex;
+  const pageCount = table.getPageCount();
 
   const handleLogout = async () => {
     try {
@@ -259,6 +262,11 @@ const HomePage = () => {
   const pageButtons = [
     { label: "<<", onClick: () => table.setPageIndex(0), disabled: !table.getCanPreviousPage() },
     { label: "<", onClick: () => table.previousPage(), disabled: !table.getCanPreviousPage() },
+    {
+      label: `${currentPageIndex + 1} / ${pageCount}`,
+      onClick: () => {}, // 클릭 이벤트 없음
+      disabled: true, // 페이지 번호 버튼은 비활성화
+    },
     { label: ">", onClick: () => table.nextPage(), disabled: !table.getCanNextPage() },
     { label: ">>", onClick: () => table.setPageIndex(table.getPageCount() - 1), disabled: !table.getCanNextPage() },
   ];
@@ -270,67 +278,123 @@ const HomePage = () => {
   
   return (
     <div>
-      <div>
+      {/* <div>
         {user ? ( // Check if a user is authenticated
           <div>
-            <p>Welcome, {nickname ? nickname : '로딩 중...'}!</p>
+            <p>환영합니다, {nickname ? nickname : '로딩 중...'}!</p>
             <button onClick={handleLogout}>로그아웃</button>
           </div>
         ) : (
           <div>
             <Link href="./sign_in">로그인</Link>
+            <Link href="./sign_up">회원가입</Link>
           </div>
         )}
-        <Link href="./sign_up">회원가입</Link>
-      </div>
-      <h2>게시판 리스트</h2>
-      <input
-        value={globalFilter}
-        onChange={(e) => setGlobalFilter(e.target.value)}
-        placeholder="검색..."
-      />
-      <table>
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div>
-        {pageButtons.map((btn) => (
-          <button key={btn.label} onClick={btn.onClick} disabled={btn.disabled}>
-            {btn.label}
-          </button>
-        ))}
-      </div>
-      { user ? 
-        (
-        <div>
-          <Link href="./write">글 쓰기</Link>
+        
+      </div> */}
+      <div className="bg-gray-100">
+        <div className="mx-60">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center justify-center flex-col">
+              <h2 className="ml-2 text-5xl font-bold text-blue-600/100">Free Board</h2>
+            </div>
+            <div className="flex items-end flex-col mx-0">
+              <div className="">
+                {user ? (
+                  <Link 
+                    href="./write"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center mb-2 font-semibold text-lg flex"
+                  >
+                    <div>글 쓰기</div>
+                  </Link>
+                  ) : (
+                  <Link 
+                    href="./sign_in"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block text-center mb-2 font-semibold text-lg"
+                  >
+                    글 쓰기
+                  </Link>
+                )}
+              </div>
+              <input
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+                placeholder="검색..."
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-2"
+              />
+            </div>
+          </div>
         </div>
-        ) : (
-        <div>
-          <Link href="./sign_in">글 쓰기</Link>
+        <div className="flex items-center justify-center">
+          <table className="w-full mx-60">
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id} className="grid grid-cols-12">
+                  {headerGroup.headers.map((header, idx) => (
+                    <th 
+                      key={header.id}
+                      className={`${
+                        idx === 0
+                          ? "col-span-1"
+                          : idx === 1
+                          ? "col-span-6"
+                          : idx === 2
+                          ? "col-span-2"
+                          : idx === 3
+                          ? "col-span-2"
+                          : "col-span-1"
+                      } bg-gray-200 p-5 border border-gray-300 mx-0 font-semibold rounded-t-lg`}
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <Link href={`/view?index=${row.original.index}`} key={row.id} className="block">
+                  <tr key={row.id} className="grid grid-cols-12 cursor-pointer hover:text-blue-700">
+                    {row.getVisibleCells().map((cell, idx) => (
+                        <td 
+                          key={cell.id}
+                          className={`${
+                            idx === 0
+                              ? "col-span-1 text-center"
+                              : idx === 1
+                              ? "col-span-6"
+                              : idx === 2
+                              ? "col-span-2"
+                              : idx === 3
+                              ? "col-span-2"
+                              : "col-span-1 text-center"
+                          } p-5 border border-gray-300 mx-0`}
+                        >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                </Link>
+              ))}
+            </tbody>
+          </table>
         </div>
-        )
-      }
+        <div className="flex items-center justify-center py-4">
+          {pageButtons.map((btn) => (
+            <button
+              key={btn.label}
+              onClick={btn.onClick}
+              disabled={btn.disabled}
+              className={`font-bold py-2 px-4 rounded mx-1 ${btn.disabled ? 'bg-gray-300 cursor-not-allowed' : 'cursor bg-blue-500 hover:bg-blue-700'}`}
+              style={{
+                backgroundColor: btn.label.includes('/') ? '#4A90E2' : 'bg-blue-300', // 페이지 번호 버튼 색상 설정
+              }}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

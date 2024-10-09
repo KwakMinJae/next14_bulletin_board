@@ -220,7 +220,8 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
         const replyComment: Comment = {
             userid: nickname,
             commentUid: user?.uid,
-            content: `${parentComment?.userid} ${replyContent}`,
+            // content: `${parentComment?.userid} ${replyContent}`,
+            content: replyContent,
             date: new Date().toISOString(),
             replies: [],
             id: Date.now(),
@@ -260,7 +261,8 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
         const replyComment: Comment = {
             userid: nickname,
             commentUid: user?.uid,
-            content: `${parentComment?.userid} ${replyContent}`,
+            // content: `${parentComment?.userid} ${replyContent}`,
+            content: replyContent,
             date: new Date().toISOString(),
             replies: [],
             id: Date.now(),
@@ -356,6 +358,11 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
+    const isConfirmed = window.confirm("정말 이 답글을 삭제하시겠습니까?");
+    
+    if (!isConfirmed) {
+        return; 
+    }
     const updatedComments = deleteCommentById(comments, commentId);
 
     // 'boards' 컬렉션에서 해당 게시글을 가져오기
@@ -444,57 +451,6 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
     });
   };
 
-  const renderReplies = (replies: Comment[], level: number) => (
-    <ul style={{ paddingLeft: level === 1 ? '20px' : '0px' }}>
-      {replies.map(reply => (
-        <li key={reply.id} style={{ marginBottom: '10px' }}>
-          {editReplyId === reply.id ? ( // 수정 폼 렌더링
-            <form onSubmit={handleEditReplySubmit}>
-              <textarea
-                value={editReplyContent}
-                onChange={(e) => setEditReplyContent(e.target.value)}
-                placeholder="답글을 입력하세요"
-                style={{ width: '100%', height: '60px' }}
-              ></textarea>
-              <button type="submit">수정 완료</button>
-              <button type="button" onClick={() => { setEditReplyId(null); setEditReplyContent(''); }}>취소</button>
-            </form>
-          ) : (
-            <>
-              <div><strong>{reply.userid}</strong></div>
-              <div>{reply.content}</div>
-              <div>{formatDate(reply.date)}</div>
-              {/* <button onClick={() => handleEditReply(reply.id, reply.content)}>수정</button>
-              <button onClick={() => handleDeleteComment(reply.id)}>삭제</button> */}
-              {auth.currentUser?.uid === reply.commentUid && (
-              <>
-                <button onClick={() => handleEditReply(reply.id, reply.content)}>수정</button>
-                <button onClick={() => handleDeleteComment(reply.id)}>삭제</button>
-              </>
-            )}
-              <button onClick={() => setReplyToReplyId(replyToReplyId === reply.id ? null : reply.id)}>
-                1답글쓰기
-              </button>
-              {replyToReplyId === reply.id && (
-                <form onSubmit={handleReplyToReplySubmit}>
-                  <textarea
-                    value={replyContent || ''}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    placeholder="답글을 입력하세요"
-                    style={{ width: '100%', height: '60px' }}
-                  ></textarea>
-                  <button type="submit">답글 등록</button>
-                  <button type="button" onClick={() => setReplyToReplyId(null)}>취소</button>
-                </form>
-              )}
-              {reply.replies && renderReplies(reply.replies, level + 1)}
-            </>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-
   const renderAttachments = (attachments: string[]) => {
     return attachments.map((attachment, index) => {
       const isImage = attachment.match(/\.(jpeg|jpg|gif|png)$/i) || attachment.startsWith('data:image');
@@ -533,6 +489,58 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   };
 
   if (!board) return <div>게시글을 찾을 수 없습니다.</div>;
+
+  const renderReplies = (replies: Comment[], level: number) => (
+    <ul style={{ paddingLeft: level === 1 ? '20px' : '0px' }}>
+      {replies.map(reply => (
+        <li key={reply.id} style={{ marginBottom: '10px' }}>
+          {editReplyId === reply.id ? ( // 수정 폼 렌더링
+            <form onSubmit={handleEditReplySubmit}>
+              <textarea
+                value={editReplyContent}
+                onChange={(e) => setEditReplyContent(e.target.value)}
+                placeholder="답글을 입력하세요"
+                style={{ width: '100%', height: '60px' }}
+              ></textarea>
+              <button type="submit">수정 완료</button>
+              <button type="button" onClick={() => { setEditReplyId(null); setEditReplyContent(''); }}>취소</button>
+            </form>
+          ) : (
+            <>
+              <div><strong>{reply.userid}</strong></div>
+              <div>{reply.parentCommentId}</div>
+              <div>{reply.content}</div>
+              <div>{formatDate(reply.date)}</div>
+              {/* <button onClick={() => handleEditReply(reply.id, reply.content)}>수정</button>
+              <button onClick={() => handleDeleteComment(reply.id)}>삭제</button> */}
+              {auth.currentUser?.uid === reply.commentUid && (
+              <>
+                <button onClick={() => handleEditReply(reply.id, reply.content)}>수정</button>
+                <button onClick={() => handleDeleteComment(reply.id)}>삭제</button>
+              </>
+            )}
+              <button onClick={() => setReplyToReplyId(replyToReplyId === reply.id ? null : reply.id)}>
+                1답글쓰기
+              </button>
+              {replyToReplyId === reply.id && (
+                <form onSubmit={handleReplyToReplySubmit}>
+                  <textarea
+                    value={replyContent || ''}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    placeholder="답글을 입력하세요"
+                    style={{ width: '100%', height: '60px' }}
+                  ></textarea>
+                  <button type="submit">답글 등록</button>
+                  <button type="button" onClick={() => setReplyToReplyId(null)}>취소</button>
+                </form>
+              )}
+              {reply.replies && renderReplies(reply.replies, level + 1)}
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <div>

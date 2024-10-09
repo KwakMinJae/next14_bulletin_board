@@ -1,8 +1,8 @@
-/* @tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
@@ -61,6 +61,11 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
 	line-height: 1;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(225.22deg, #9CECFB 0.19%, #3DAEE6 50%, #0052D4 99.81%);
+  position: relative;
+  overflow-x: hidden;
 }
 ol, ul {
 	list-style: none;
@@ -76,4 +81,19 @@ q:before, q:after {
 table {
 	border-collapse: collapse;
 	border-spacing: 0;
+}
+.body_children {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  top: -100px;
+  z-index:-1;
+  background: rgba(49, 107, 160, 0.3);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 150px;
+  left: 50%; /* 수평 중앙 */
+  transform: translate(-50%, 0) rotate(35.9deg); /* 수평 중앙에 위치하도록 이동 */
+}
+.body_main {
+  z-index: 1000;
 }
