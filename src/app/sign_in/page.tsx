@@ -56,41 +56,63 @@ const LoginPage = () => {
         <div>
             <div className="bg-gray-100">
                 <div className='mx-60'>
-                    <h2 className="ml-2 text-5xl font-bold text-blue-600/100 flex items-center py-4">
-                        Login
-                        <Icon name="cloud" className="w-20 h-20 ms-2" />
-                    </h2>
-                    {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
-                    <div>
-                        <form onSubmit={handleLogin}>
-                            <div>
-                            {/* <label htmlFor="userId">아이디: </label> */}
-                            <input
-                                placeholder="아이디"
-                                type="text"
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-2"
-                                required
-                            />
-                            </div>
-                            <div>
-                            {/* <label>Password:</label> */}
-                            <input
-                                placeholder="비밀번호"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-2"
-                                required
-                            />
-                            </div>
-                            {error && <p style={{ color: "red" }}>{error}</p>}
-                            <button type="submit">로그인</button>
-                        </form>
-                        <Link href="../../sign_up">회원가입</Link>
-                        <Link href="../../find_id">아이디 찾기</Link>
-                        <Link href="../../password_reset">비밀번호 재설정</Link>
+                    <div className="flex justify-center">
+                        <div className="pb-8 max-w-md w-full">
+                            <h2 className="text-5xl font-bold text-blue-600/100 flex items-center py-4">
+                                Login
+                                <Icon name="cloud" className="w-20 h-20 ms-2" />
+                            </h2>
+                        {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
+                            <form onSubmit={handleLogin}>
+                                <div>
+                                {/* <label htmlFor="userId">아이디: </label> */}
+                                <input
+                                    placeholder="아이디"
+                                    type="text"
+                                    value={userId}
+                                    onChange={(e) => setUserId(e.target.value)}
+                                    className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 mb-2"
+                                    required
+                                />
+                                </div>
+                                <div>
+                                {/* <label>Password:</label> */}
+                                <input
+                                    placeholder="비밀번호"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 mb-2"
+                                    required
+                                />
+                                </div>
+                                {error && <p style={{ color: "red" }} className="my-4">{error}</p>}
+                                <button 
+                                    type="submit"
+                                    className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full block text-center mb-2 font-semibold text-lg"
+                                >
+                                    로그인
+                                </button>
+                            </form>
+                            <Link 
+                                href="../../sign_up"
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full block text-center mb-2 font-semibold text-lg"
+                            >
+                                회원가입
+                            </Link>
+                            <Link 
+                                href="../../find_id"
+                                className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full block text-center mb-2 font-semibold text-lg"
+                            >
+                                아이디 찾기
+                            </Link>
+                            <Link 
+                                href="../../password_reset"
+                                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full block text-center mb-2 font-semibold text-lg"
+                            >
+                                비밀번호 재설정
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

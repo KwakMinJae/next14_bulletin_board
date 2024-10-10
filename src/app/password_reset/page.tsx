@@ -39,30 +39,47 @@ const PasswordResetPage = () => {
 
   return (
     <div>
-      <h2>비밀번호 재설정</h2>
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handlePasswordReset}>
-        <div>
-          <label>아이디:</label>
-          <input
-            type="text"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            required
-          />
+      <div className="bg-gray-100">
+        <div className='mx-60'>
+          <div className="flex justify-center">
+            <div className="pb-8 max-w-md w-full">
+            <h2 className="text-5xl font-bold text-blue-600/100 flex items-center py-4 my-4">Pasword Reset</h2>
+            {message && <p style={{ color: "green" }}>{message}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            <form onSubmit={handlePasswordReset}>
+              <div>
+                <label htmlFor="userId" className="font-semibold">아이디</label>
+                <input
+                  id="userId"
+                  type="text"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="userEmail" className="font-semibold">이메일</label>
+                <input
+                  id="userEmail"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                  required
+                />
+              </div>
+              <button 
+                type="submit"
+                className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full block text-center my-4 font-semibold text-lg"
+              >
+                비밀번호 재설정 이메일 보내기
+              </button>
+            </form>
+            </div>
+          </div>
         </div>
-        <div>
-          <label>이메일:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">비밀번호 재설정 이메일 보내기</button>
-      </form>
+      </div>
     </div>
   );
 };

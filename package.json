@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "export": "next build && next export"
+    "lint": "next lint"
   },
   "dependencies": {
     "@firebasegen/default": "file:generated/javascript/default",
@@ -19,8 +18,8 @@
     "express": "^4.21.0",
     "firebase": "^10.14.0",
     "next": "14.2.6",
-    // "next-auth": "^4.24.8",
-    // "nodemailer": "^6.9.15",
+    "next-auth": "^4.24.8",
+    "nodemailer": "^6.9.15",
     "react": "^18",
     "react-dom": "^18",
     "sass": "^1.79.4"

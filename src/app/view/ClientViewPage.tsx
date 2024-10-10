@@ -9,6 +9,8 @@ import { auth, db } from '../../../firebaseConfig';  // Firestore 인스턴스
 import { collection, query, where, getDocs, setDoc, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { formatDate } from '@/utils/uttls';
+import Icon from '../component/Icon';
+import LoadingSpinner from '../component/LoadingSpinner';
 interface ClientViewPageProps {
   board: Board | null;
 }
@@ -30,6 +32,10 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [boards, setBoards] = useState<Board | null>(null);
   const [nickname, setNickname] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
   // console.log(searchParams);
   useEffect(() => {
     const fetchBoard = async () => {
@@ -488,7 +494,15 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
     });
   };
 
-  if (!board) return <div>게시글을 찾을 수 없습니다.</div>;
+  // if (!board) return <div>게시글을 찾을 수 없습니다.</div>;
+  // if (!board) {
+  //   return (
+  //   <div className="flex justify-center items-center min-h-screen bg-gray-100">
+  //     <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+  //   </div>
+  //   )
+  // }
+  if (!board) return <LoadingSpinner/>
 
   const renderReplies = (replies: Comment[], level: number) => (
     <ul style={{ paddingLeft: level === 1 ? '20px' : '0px' }}>
@@ -528,7 +542,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                     value={replyContent || ''}
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="답글을 입력하세요"
-                    style={{ width: '100%', height: '60px' }}
+                    className="block w-full h-16 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
                   ></textarea>
                   <button type="submit">답글 등록</button>
                   <button type="button" onClick={() => setReplyToReplyId(null)}>취소</button>
@@ -543,55 +557,129 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   );
 
   return (
-    <div>
-      <h2>작성한 게시글</h2>
+    <div className='max-h-[85vh] overflow-y-auto'>
+      {/* <h2>작성한 게시글</h2> */}
+      <div className="bg-gray-100">
+      <div className='mx-60'>
+            <div className="flex justify-center">
+              <div className="pb-8 max-w-4xl w-full">
       <div>
         <div>
-          <strong>제목: </strong> {board.subject}
+          <div className='font-bold my-6 text-3xl'>
+            {/* <strong>제목: </strong> {board.subject} */}
+            <span>{board.subject}</span>
+          </div>
+          <div className='flex justify-between my-4'>
+            <div>
+              <div className='font-semibold mb-2'>
+                {/* <strong>작성자: </strong> {board.writer} */}
+                <span>{board.writer}</span>
+              </div>
+              <div className='flex'>
+                <div className='me-3'>
+                  {/* <strong>작성일: </strong> {formatDate(board.date)} */}
+                  <span>{formatDate(board.date)}</span>
+                </div>
+                <div>
+                  {/* <strong>조회수: </strong> {board.views} */}
+                  <span>조회 {board.views}</span>
+                </div>
+              </div>
+            </div>
+            <div className='flex items-center'>
+              <div className='h-5'>
+              댓글 ({comments.length})
+              </div>
+              {auth.currentUser?.uid === boards?.userId && (
+                <div className="relative inline-block text-left">
+                  <button
+                      onClick={toggleDropdown}
+                      className="inline-flex justify-center w-full rounded-md text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
+                  >
+                    <Icon name="dots_vertical" className='w-5 h-5 text-black-500'></Icon>
+                  </button>
+      
+                    {isOpen && (
+                      <div className="absolute right-0 mt-2 w-28 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                          <div className="py-1">
+                              <button
+                                  onClick={handleModify}
+                                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              >
+                                  수정
+                              </button>
+                              <button
+                                  onClick={handleDelete}
+                                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              >
+                                  삭제
+                              </button>
+                          </div>
+                      </div>
+                    )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <div>
-          <strong>조회수: </strong> {board.views}
-        </div>
-        <div>
-          <strong>작성자: </strong> {board.writer}
-        </div>
-        <div>
-          <strong>작성일: </strong> {formatDate(board.date)}
-        </div>
-        <div>
-          <strong>내용: </strong> {board.content}
+        <hr/>
+        <div className='p-4'>
+          {/* <strong>내용: </strong> {board.content} */}
+          {board.content}
         </div>
         {board.attachments && board.attachments.length > 0 ? (
-  <div>
-    <h3>첨부된 파일</h3>
-    {renderAttachments(board.attachments)}
-  </div>
-) : (
-  <p>첨부된 파일이 없습니다.</p>
-)}
+          <div className='my-6'>
+            {/* <h3>첨부된 파일</h3> */}
+            {renderAttachments(board.attachments)}
+          </div>
+        ) : (
+          <p></p>
+        )}
       </div>
-      {auth.currentUser?.uid === boards?.userId && (
+      {/* {auth.currentUser?.uid === boards?.userId && (
         <>
         <button type="button" onClick={handleModify}>수정</button>
         <button type="button" onClick={handleDelete}>삭제</button>
         </>
-      )}
-      <Link href="/">뒤로가기</Link>
+      )} */}
+      {/* <Link href="/">뒤로가기</Link> */}
 
-      <div>
-        <h3>댓글 ({comments.length})</h3>
-        <div>
-          <button onClick={() => setSortOrder('newest')}>최신순</button>
-          <button onClick={() => setSortOrder('oldest')}>등록순</button>
+      <div className='my-10'>
+        <div className='flex items-center justify-between mb-4'>
+          <h3>댓글 ({comments.length})</h3>
+          <div className='flex'>
+            <button 
+              onClick={() => setSortOrder('newest')}
+              className="w-2/4 bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-lg mx-1"
+            >
+              최신순
+            </button>
+            <button 
+              onClick={() => setSortOrder('oldest')}
+              className="w-2/4 bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-lg mx-1"
+            >
+              등록순
+            </button>
+          </div>
         </div>
         <form onSubmit={handleCommentSubmit}>
+          <div>
           <textarea
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
             placeholder="댓글을 입력하세요"
-            style={{ width: '100%', height: '60px' }}
+            // style={{ width: '100%', height: '60px' }}
+            className="block w-full h-16 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
           ></textarea>
-          <button type="submit">댓글 등록</button>
+          <div className='flex flex-row-reverse'>
+            <button 
+              type="submit"
+              className="w-1/6 bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-base mx-1"
+            >
+              댓글 등록
+            </button>
+          </div>
+          </div>
         </form>
         <ul style={{ paddingLeft: 0 }}>
           {sortedComments().map(comment => (
@@ -609,7 +697,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                 </form>
               ) : (
                 <>
-                  <div><strong>{comment.userid}</strong></div>
+                  <div>{comment.userid}</div>
                   <div>{comment.content}</div>
                   <div>{formatDate(comment.date)}</div>
                   {/* <button onClick={() => handleEditComment(comment.id, comment.content)}>수정</button>
@@ -629,7 +717,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                         value={replyContent || ''}
                         onChange={(e) => setReplyContent(e.target.value)}
                         placeholder="답글을 입력하세요"
-                        style={{ width: '100%', height: '60px' }}
+                        className="block w-full h-16 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
                       ></textarea>
                       <button type="submit">답글 등록</button>
                       <button type="button" onClick={() => setReplyToId(null)}>취소</button>
@@ -642,6 +730,10 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
             </li>
           ))}
         </ul>
+      </div>
+      </div>
+      </div>
+      </div>
       </div>
     </div>
   );

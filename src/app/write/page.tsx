@@ -146,75 +146,111 @@ export default function WritePage() {
 
   return (
     <div>
-      <h2>게시판 쓰기</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>
-            제목:
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            작성자:
-            {/* <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setWriter(e.target.value)}
-            /> */}
-            <span>{nickname}</span>
-          </label>
-        </div>
-        <div>
-          <label>
-            내용:
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            사진/동영상 첨부:
-            <input
-              type="file"
-              multiple
-              accept="image/*,video/*"
-              onChange={handleFileChange}
-            />
-          </label>
-        </div>
-        <div>
-          {/* {attachmentPreviews.map((preview, index) => (
-            <div key={index}>
-              {attachments[index].type.startsWith('image') ? (
-                <img src={preview} alt={`attachment-${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
-              ) : (
-                <video src={preview} controls style={{ maxWidth: '200px', maxHeight: '200px' }} />
-              )}
-            </div>
-          ))} */}
-            {attachmentPreviews.map((preview, index) => (
-            <div key={index}>
-              {attachments[index].type.startsWith('image') ? (
-                <img src={preview} alt={`attachment-${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
-              ) : (
-                <video src={preview} controls style={{ maxWidth: '200px', maxHeight: '200px' }} />
-              )}
-              <button type="button" onClick={() => handleRemoveAttachment(index)}>삭제</button>
-            </div>
-          ))}
-        </div>
+        <div className="bg-gray-100">
+          <div className='mx-60'>
+              <div className="flex justify-center">
+                <div className="pb-8 max-w-3xl w-full">
+              <h2 className="text-5xl font-bold text-blue-600/100 flex items-center py-4 my-4">글 쓰기</h2>
+              <form onSubmit={handleSubmit}>
+                <div>
+                    <label htmlFor='writeTitle' className="font-semibold">
+                      제목
+                    </label>
+                    <input
+                      id='writeTitle'
+                      type="text"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                    />
+                </div>
+                <div>
+                  {/* <label>
+                    작성자:
+                    <input
+                      type="text"
+                      value={nickname}
+                      onChange={(e) => setWriter(e.target.value)}
+                    />
+                    <span>{nickname}</span>
+                  </label> */}
+                </div>
+                <div>
+                  <label htmlFor='writeText' className="font-semibold">
+                    내용
+                  </label>
+                    <textarea
+                      id='writeText'
+                      value={content}
+                      className="block w-full h-80 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                      onChange={(e) => setContent(e.target.value)}
+                    />
+                </div>
+                <div>
+                  <label htmlFor='writeFile' className="font-semibold">
+                    사진/동영상 첨부
+                  </label>
+                  <input
+                    id='writeFile'
+                    type="file"
+                    multiple
+                    accept="image/*,video/*"
+                    className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                    onChange={handleFileChange}
+                  />
+                </div>
+                <div>
+                  {/* {attachmentPreviews.map((preview, index) => (
+                    <div key={index}>
+                      {attachments[index].type.startsWith('image') ? (
+                        <img src={preview} alt={`attachment-${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
+                      ) : (
+                        <video src={preview} controls style={{ maxWidth: '200px', maxHeight: '200px' }} />
+                      )}
+                    </div>
+                  ))} */}
+                    {attachmentPreviews.map((preview, index) => (
+                    <div key={index}>
+                      <div className='flex'>
+                        <div>
+                          {attachments[index].type.startsWith('image') ? (
+                            <img src={preview} alt={`attachment-${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
+                          ) : (
+                            <video src={preview} controls style={{ maxWidth: '200px', maxHeight: '200px' }} />
+                          )}
+                        </div>
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveAttachment(index)}
+                        className="mx-2 w-1/7 h-10 bg-red-500 hover:bg-blue-red text-white font-bold py-2 px-4 rounded-full block text-center my-2 font-semibold text-lg"
+                      >
+                        삭제
+                      </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit">글작성</button>
-      </form>
-      <Link href="/">뒤로 가기</Link>
+                {/* {error && <p style={{ color: 'red' }} className="my-4">{error}</p>} */}
+                <div>
+                    <div className='flex flex-row-reverse'>
+                      {error && <p style={{ color: 'red' }} className="my-4">{error}</p>}
+                    </div>
+                    <div className='flex flex-row-reverse'>
+                      <button 
+                        type="submit"
+                        className="w-1/4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full block text-center my-2 font-semibold text-lg"
+                      >
+                        글작성
+                      </button>
+                    </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* <Link href="/">뒤로 가기</Link> */}
     </div>
   );
 }

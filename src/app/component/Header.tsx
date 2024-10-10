@@ -46,7 +46,7 @@ const Header = () => {
                     <div>
                         {user ? ( // Check if a user is authenticated
                             <div className='flex'>
-                                <p className='text-center flex items-center font-bold me-3'>{nickname ? `환영합니다, ${nickname} 님` : '로딩 중 ...'} </p>
+                                <p className='text-center flex items-center font-bold me-3'>{nickname ? `${nickname} 님` : '로딩 중 ...'} </p>
                                 <button onClick={handleLogout} className='flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center'>
                                     <div className='flex'>
                                         <div className='flex'>

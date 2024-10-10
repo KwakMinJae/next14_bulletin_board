@@ -12,7 +12,7 @@ const Footer = () => {
 
     return (
         <>
-            <div className="mx-64">
+            <div className="mx-64 my-6">
                 <div className={styles.footer}>
                     <a href="#none" onClick={handleToggle} className={styles.infoButton}>
                         <Icon name="bang" className="w-6 h-6 text-black-500" />

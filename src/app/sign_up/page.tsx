@@ -115,71 +115,106 @@ export default function RegisterPage() {
   
     return (
         <div>
-        <h2>회원가입</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>User ID:</label>
-            <input
-              type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label>Email:</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label>Password:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label>Confirm Password:</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label>Nickname:</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit">회원가입</button>
-        </form>
+          <div className="bg-gray-100">
+            <div className='mx-60'>
+                <div className="flex justify-center">
+                  <div className="pb-8 max-w-md w-full">
+                  <h2 className="text-5xl font-bold text-blue-600/100 flex items-center py-4 my-4">Sign Up</h2>
+          <form onSubmit={handleSubmit} >
+            <div>
+              <label htmlFor="userId" className="font-semibold">아이디</label>
+              <input
+                id="userId"
+                type="text"
+                placeholder="아이디"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="font-semibold">이메일</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="이메일"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="font-semibold">비밀번호</label>
+              <input
+                id="password"
+                type="password"
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="passwordConfirm" className="font-semibold">비밀번호 확인</label>
+              <input
+                id="passwordConfirm"
+                type="password"
+                placeholder="비밀번호 확인"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="nickname" className="font-semibold">닉네임</label>
+              <input
+                id="nickname"
+                type="text"
+                placeholder="닉네임"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                required
+              />
+            </div>
+            {error && <p style={{ color: "red" }} className="my-4">{error}</p>}
+            <button 
+              type="submit"
+              className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full block text-center my-4 font-semibold text-lg"
+            >
+              인증번호 받기
+            </button>
+          </form>
 
         {/* Verification Code Input */}
-        {verificationCode && (
-          <div>
-            <h3>이메일 인증</h3>
-            <input
-              type="text"
-              placeholder="인증번호를 입력하세요"
-              value={enteredCode}
-              onChange={(e) => setEnteredCode(e.target.value)}
-              required
-            />
-            <button onClick={handleVerification}>인증번호 확인</button>
+          {verificationCode && (
+            <div>
+              <label htmlFor="enteredCode" className="font-semibold">이메일 인증</label>
+              <input
+                id="enteredCode"
+                type="text"
+                placeholder="인증번호를 입력하세요"
+                value={enteredCode}
+                onChange={(e) => setEnteredCode(e.target.value)}
+                className="block w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
+                required
+              />
+              <button 
+                onClick={handleVerification}
+                className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full block text-center my-4 font-semibold text-lg"
+              >
+                회원가입 하기
+              </button>
+            </div>
+          )}
           </div>
-        )}
+          </div>
+          </div>
+        </div>
       </div>
     );
   }
