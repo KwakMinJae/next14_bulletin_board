@@ -1,21 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Board, Comment } from '../../types/types';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { getBoardsFromLocalStorage, setBoardsToLocalStorage } from '../../utils/storage';
 import { auth, db } from '../../../firebaseConfig';  // Firestore 인스턴스
-import { collection, query, where, getDocs, setDoc, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { formatDate } from '@/utils/uttls';
 import Icon from '../component/Icon';
 import LoadingSpinner from '../component/LoadingSpinner';
-interface ClientViewPageProps {
-  board: Board | null;
-}
 
-const ClientViewPage = ({ board }: ClientViewPageProps) => {
+const ClientViewPage = () => {
   const router = useRouter();
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentContent, setCommentContent] = useState('');
@@ -27,6 +22,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   const [editReplyId, setEditReplyId] = useState<number | null>(null); // 추가된 부분
   const [editReplyContent, setEditReplyContent] = useState<string>(''); // 추가된 부분
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [board, setBoard] = useState<Board | null>(null);
   const index = board?.index;
   const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
@@ -46,6 +42,27 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
     }
   };
   // console.log(searchParams);
+  useEffect(() => {
+    const fetchBoard = async () => {
+      const index = searchParams.get('index');
+      if (index !== null) {
+        // Firestore에서 해당 게시글 가져오기
+        const q = query(collection(db, 'boards'), where('index', '==', Number(index)));
+        const querySnapshot = await getDocs(q);
+        // console.log(querySnapshot.docs[0].data());
+        
+        if (!querySnapshot.empty) {
+          const boardData = querySnapshot.docs[0].data() as Board;
+          setBoard(boardData);
+        } else {
+          console.error('게시글을 찾을 수 없습니다.');
+        }
+      }
+    };
+
+    fetchBoard();
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchBoard = async () => {
       const index = searchParams.get('index');
@@ -629,7 +646,6 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   );
 
   return (
-    <Suspense fallback={<div><LoadingSpinner/></div>}>
     <div className='max-h-[85vh] overflow-y-auto'>
       {/* <h2>작성한 게시글</h2> */}
       <div className="bg-gray-100">
@@ -868,7 +884,6 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
       </div>
       </div>
     </div>
-    </Suspense>
   );
 };
 
