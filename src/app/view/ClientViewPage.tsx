@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Board, Comment } from '../../types/types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -629,6 +629,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   );
 
   return (
+    <Suspense fallback={<div><LoadingSpinner/></div>}>
     <div className='max-h-[85vh] overflow-y-auto'>
       {/* <h2>작성한 게시글</h2> */}
       <div className="bg-gray-100">
@@ -867,6 +868,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
       </div>
       </div>
     </div>
+    </Suspense>
   );
 };
 
