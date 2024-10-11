@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { fileToBase64, recordDate } from '@/utils/uttls';
 import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
@@ -72,6 +72,7 @@ const ModifyPage = () => {
   if (!board) return <LoadingSpinner/>;
 
   return (
+    <Suspense fallback={<LoadingSpinner />}>
     <div>
       <div className="bg-gray-100">
         <div className='mx-60'>
@@ -165,6 +166,7 @@ const ModifyPage = () => {
         </div>
       </div>
     </div>
+    </Suspense>
   );
 };
 

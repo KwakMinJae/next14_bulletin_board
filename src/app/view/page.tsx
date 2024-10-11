@@ -1,13 +1,14 @@
 // app/view/page.tsx
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams from 'next/navigation'
 import ClientViewPage from './ClientViewPage';
 import { getBoardsFromLocalStorage } from '../../utils/storage';
 import { db } from '../../../firebaseConfig'; // Firestore 인스턴스
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Board } from '../../types/types';
+import LoadingSpinner from '../component/LoadingSpinner';
 
 const ViewPage = () => {
   const searchParams = useSearchParams(); // Access search params
@@ -44,7 +45,10 @@ const ViewPage = () => {
     fetchBoard();
   }, [searchParams]);
   return (
-    <ClientViewPage board={board} />
+    // <ClientViewPage board={board} />
+    <Suspense fallback={<div><LoadingSpinner/></div>}>
+      <ClientViewPage board={board} />
+    </Suspense>
   );
 };
 
