@@ -47,7 +47,7 @@ const LoginPage = () => {
             if (error.code === "auth/invalid-credential") {
                 setError("비밀번호가 틀렸습니다."); // 비밀번호가 틀린 경우
             } else {
-                setError("아이가 잘못되었습니다."); // 기타 오류 처리
+                setError("아이디가 잘못되었습니다."); // 기타 오류 처리
             }
         }
     };

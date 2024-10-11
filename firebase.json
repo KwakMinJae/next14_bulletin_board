@@ -1,21 +1,4 @@
 {
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ]
-    }
-  ],
   "hosting": {
     "public": "public",
     "ignore": [
@@ -28,35 +11,19 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "dataconnect": {
-    "source": "dataconnect"
-  },
   "storage": {
     "rules": "storage.rules"
   },
   "emulators": {
-    "functions": {
-      "port": 5001
-    },
     "firestore": {
       "port": 8080
     },
     "hosting": {
       "port": 5000
     },
-    "dataconnect": {
-      "port": 9399
-    },
     "ui": {
       "enabled": true
     },
     "singleProjectMode": true
-  },
-  "remoteconfig": {
-    "template": "remoteconfig.template.json"
-  },
-  "extensions": {},
-  "database": {
-    "rules": "database.rules.json"
   }
 }
