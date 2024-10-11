@@ -6,6 +6,7 @@ import { fileToBase64, recordDate } from '@/utils/uttls';
 import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 import { Board } from '@/types/types';
+import LoadingSpinner from '../component/LoadingSpinner';
 
 const ModifyPage = () => {
   const [board, setBoard] = useState<Board | null>(null);
@@ -68,7 +69,7 @@ const ModifyPage = () => {
     setAttachments(prev => prev.filter(att => att !== attachmentToRemove));
   };
 
-  if (!board) return <div>게시글을 찾을 수 없습니다.</div>;
+  if (!board) return <LoadingSpinner/>;
 
   return (
     <div>

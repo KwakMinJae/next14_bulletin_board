@@ -65,7 +65,7 @@ body {
   height: 100vh;
   background: linear-gradient(225.22deg, #9CECFB 0.19%, #3DAEE6 50%, #0052D4 99.81%);
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 ol, ul {
 	list-style: none;

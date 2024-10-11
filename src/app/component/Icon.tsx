@@ -1,7 +1,7 @@
 import React from 'react';
 
 type IconProps = {
-  name: 'login' | 'logout' | 'signup' | 'cloud' | 'bang' | 'dots_vertical';
+  name: 'login' | 'logout' | 'signup' | 'cloud' | 'bang' | 'dots_vertical' | 'dots_horizon';
   className?: string; // 추가적으로 클래스명을 받아서 스타일을 줄 수 있습니다.
 };
 
@@ -71,6 +71,12 @@ const Icon: React.FC<IconProps> = ({ name, className }) => {
       return(
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={className} viewBox="0 0 16 16">
           <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+        </svg>
+      )
+    case 'dots_horizon':
+      return(
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={className} viewBox="0 0 16 16">
+          <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
         </svg>
       )
     default:

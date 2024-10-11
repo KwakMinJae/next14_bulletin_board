@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@firebasegen/default": "file:generated/javascript/default",
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@sendgrid/mail": "^8.1.3",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/react-table": "^8.20.5",

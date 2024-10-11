@@ -33,8 +33,17 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   const [boards, setBoards] = useState<Board | null>(null);
   const [nickname, setNickname] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const toggleDropdown = () => {
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+
+  const toggleVerticalDropdown = () => {
     setIsOpen(!isOpen);
+  };
+  const toggleHorizontalDropdown = (commentId: number) => {
+    if (openDropdownId === commentId) {
+      setOpenDropdownId(null); // 이미 열려 있는 경우 닫기
+    } else {
+      setOpenDropdownId(commentId); // 해당 댓글의 드롭다운 열기
+    }
   };
   // console.log(searchParams);
   useEffect(() => {
@@ -304,6 +313,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
   const handleEditComment = (commentId: number, currentContent: string) => {
     setEditCommentId(commentId);
     setEditCommentContent(currentContent);
+    setOpenDropdownId(null);
   };
 
   const handleEditReply = (replyId: number, currentContent: string) => { // 추가된 부분
@@ -514,28 +524,76 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                 value={editReplyContent}
                 onChange={(e) => setEditReplyContent(e.target.value)}
                 placeholder="답글을 입력하세요"
-                style={{ width: '100%', height: '60px' }}
+                className="block w-full h-16 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
               ></textarea>
-              <button type="submit">수정 완료</button>
-              <button type="button" onClick={() => { setEditReplyId(null); setEditReplyContent(''); }}>취소</button>
+              <div className='flex justify-end mb-2'>
+                <button 
+                  type="submit"
+                  className="w-1/8 bg-black hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                >
+                  수정 완료
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => { setEditReplyId(null); setEditReplyContent(''); }}
+                  className="w-1/8 bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                >
+                  취소
+                </button>
+              </div>
             </form>
           ) : (
-            <>
-              <div><strong>{reply.userid}</strong></div>
-              <div>{reply.parentCommentId}</div>
-              <div>{reply.content}</div>
-              <div>{formatDate(reply.date)}</div>
+            <div className=''>
+              <div className='flex justify-between items-center'>
+                <div className='my-2 text-sm'>{reply.userid}</div>
+                <div>
+                  {auth.currentUser?.uid === reply.commentUid && (
+                    <div className="relative inline-block text-left">
+                      <button
+                        onClick={() => toggleHorizontalDropdown(reply.id)}
+                        className="inline-flex justify-center w-full rounded-md text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
+                      >
+                        <Icon name="dots_horizon" className='w-5 h-5 text-black-500'></Icon>
+                      </button>
+
+                      {openDropdownId === reply.id && (
+                        <div className="absolute z-10 right-0 mt-2 w-28 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                          <div className="py-1">
+                            <button
+                              onClick={() => handleEditReply(reply.id, reply.content)}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                            >
+                              수정
+                            </button>
+                            <button
+                              onClick={() => handleDeleteComment(reply.id)}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className='flex my-2'>
+                <div className='font-bold me-3'>{reply.parentCommentId}</div>
+                <div className='break-words'>{reply.content}</div>
+              </div>
               {/* <button onClick={() => handleEditReply(reply.id, reply.content)}>수정</button>
               <button onClick={() => handleDeleteComment(reply.id)}>삭제</button> */}
-              {auth.currentUser?.uid === reply.commentUid && (
-              <>
-                <button onClick={() => handleEditReply(reply.id, reply.content)}>수정</button>
-                <button onClick={() => handleDeleteComment(reply.id)}>삭제</button>
-              </>
-            )}
-              <button onClick={() => setReplyToReplyId(replyToReplyId === reply.id ? null : reply.id)}>
-                1답글쓰기
-              </button>
+              <div className='flex mb-2'>
+                <div className='text-sm font-light'>{formatDate(reply.date)}</div>
+                <button 
+                  onClick={() => setReplyToReplyId(replyToReplyId === reply.id ? null : reply.id)}
+                  className='ms-2 hover:font-bold'
+                >
+                  답글쓰기
+                </button>
+              </div>
+              {/* <hr/> */}
               {replyToReplyId === reply.id && (
                 <form onSubmit={handleReplyToReplySubmit}>
                   <textarea
@@ -544,12 +602,26 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                     placeholder="답글을 입력하세요"
                     className="block w-full h-16 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
                   ></textarea>
-                  <button type="submit">답글 등록</button>
-                  <button type="button" onClick={() => setReplyToReplyId(null)}>취소</button>
+                  <div className='flex justify-end mb-2'>
+                    <button 
+                      type="submit"
+                      className="w-1/8 bg-black hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                    >
+                      답글 등록
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setReplyToReplyId(null)}
+                      className="w-1/8 bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                    >
+                      취소
+                    </button>
+                  </div>
                 </form>
               )}
+              {/* <hr/> */}
               {reply.replies && renderReplies(reply.replies, level + 1)}
-            </>
+            </div>
           )}
         </li>
       ))}
@@ -565,7 +637,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
               <div className="pb-8 max-w-4xl w-full">
       <div>
         <div>
-          <div className='font-bold my-6 text-3xl'>
+          <div className='font-bold my-6 text-3xl break-words'>
             {/* <strong>제목: </strong> {board.subject} */}
             <span>{board.subject}</span>
           </div>
@@ -575,7 +647,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                 {/* <strong>작성자: </strong> {board.writer} */}
                 <span>{board.writer}</span>
               </div>
-              <div className='flex'>
+              <div className='flex font-light text-sm'>
                 <div className='me-3'>
                   {/* <strong>작성일: </strong> {formatDate(board.date)} */}
                   <span>{formatDate(board.date)}</span>
@@ -593,7 +665,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
               {auth.currentUser?.uid === boards?.userId && (
                 <div className="relative inline-block text-left">
                   <button
-                      onClick={toggleDropdown}
+                      onClick={toggleVerticalDropdown}
                       className="inline-flex justify-center w-full rounded-md text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
                   >
                     <Icon name="dots_vertical" className='w-5 h-5 text-black-500'></Icon>
@@ -623,7 +695,7 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
           </div>
         </div>
         <hr/>
-        <div className='p-4'>
+        <div className='p-4 break-words'>
           {/* <strong>내용: </strong> {board.content} */}
           {board.content}
         </div>
@@ -690,27 +762,73 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                     value={editCommentContent}
                     onChange={(e) => setEditCommentContent(e.target.value)}
                     placeholder="댓글을 입력하세요"
-                    style={{ width: '100%', height: '60px' }}
+                    className="block w-full h-16 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
                   ></textarea>
-                  <button type="submit">수정 완료</button>
-                  <button type="button" onClick={() => { setEditCommentId(null); setEditCommentContent(''); }}>취소</button>
+                  <div className='flex justify-end mb-2'>
+                    <button 
+                      type="submit"
+                      className="w-1/8 bg-black hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                    >
+                      수정 완료
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => { setEditCommentId(null); setEditCommentContent(''); }}
+                      className="w-1/8 bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                    >
+                      취소
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <>
-                  <div>{comment.userid}</div>
-                  <div>{comment.content}</div>
-                  <div>{formatDate(comment.date)}</div>
+                <div className='flex justify-between items-center'>
+                  <div className='my-2 text-sm'>{comment.userid}</div>
+                  <div>
+                      {auth.currentUser?.uid === comment.commentUid && (
+                        <div className="relative inline-block text-left">
+                        <button
+                          onClick={() => toggleHorizontalDropdown(comment.id)}
+                          className="inline-flex justify-center w-full rounded-md text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
+                        >
+                          <Icon name="dots_horizon" className='w-5 h-5 text-black-500'></Icon>
+                        </button>
+
+                        {openDropdownId === comment.id && (
+                          <div className="absolute z-10 right-0 mt-2 w-28 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                            <div className="py-1">
+                              <button
+                                onClick={() => handleEditComment(comment.id, comment.content)}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              >
+                                수정
+                              </button>
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                  <div className='my-2 break-words'>{comment.content}</div>
+                  <div className='flex mb-2'>
+                    <div className='text-sm font-light'>{formatDate(comment.date)}</div>
+                    <button 
+                      onClick={() => setReplyToId(replyToId === comment.id ? null : comment.id)}
+                      className='ms-2 hover:font-bold'
+                    >
+                      답글쓰기
+                    </button>
+                  </div>
                   {/* <button onClick={() => handleEditComment(comment.id, comment.content)}>수정</button>
                   <button onClick={() => handleDeleteComment(comment.id)}>삭제</button> */}
-                  {auth.currentUser?.uid === comment.commentUid && (
-                    <>
-                      <button onClick={() => handleEditComment(comment.id, comment.content)}>수정</button>
-                      <button onClick={() => handleDeleteComment(comment.id)}>삭제</button>
-                    </>
-                  )}
-                  <button onClick={() => setReplyToId(replyToId === comment.id ? null : comment.id)}>
-                    답글쓰기
-                  </button>
+                  {/* <hr/> */}
                   {replyToId === comment.id && (
                     <form onSubmit={handleReplySubmit}>
                       <textarea
@@ -719,14 +837,27 @@ const ClientViewPage = ({ board }: ClientViewPageProps) => {
                         placeholder="답글을 입력하세요"
                         className="block w-full h-16 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 hover:border-blue-400 transition duration-200 px-2 py-3 my-2"
                       ></textarea>
-                      <button type="submit">답글 등록</button>
-                      <button type="button" onClick={() => setReplyToId(null)}>취소</button>
+                      <div className='flex justify-end mb-2'>
+                        <button 
+                          type="submit"
+                          className="w-1/8 bg-black hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                        >
+                          답글 등록
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => setReplyToId(null)}
+                          className="w-1/8 bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-full block text-center my-2 font-semibold text-sm mx-1"
+                        >
+                          취소
+                        </button>
+                      </div>
                     </form>
                   )}
                   {comment.replies && renderReplies(comment.replies, 1)}
+                  <hr/>
                 </>
               )}
-              <hr></hr>
             </li>
           ))}
         </ul>
