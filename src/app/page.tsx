@@ -149,7 +149,7 @@ const HomePage = () => {
         <div className="mx-60">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center justify-center flex-col">
-              <h2 className="ml-2 text-5xl font-bold text-blue-600/100">Free Board1</h2>
+              <h2 className="ml-2 text-5xl font-bold text-blue-600/100">Free Board</h2>
             </div>
             <div className="flex items-end flex-col mx-0">
               <div className="">
