@@ -5,50 +5,45 @@ import { db, auth } from "../../../firebaseConfig";
 import { useState } from "react";
 import emailjs from "emailjs-com";
 import { service_id, template_id, user_id } from "../../../emailjs";
+import { useRouter } from "next/navigation";
+import SweetAlert2 from "../component/sweetalert2";
 
 const generateVerificationCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-const registerUser = async (userId: string, email: string, password: string, nickname: string) => {
+const registerUser = async (userId: string, email: string, nickname: string) => {
   try {
     // Check if the email is already registered
     const usersRef = collection(db, 'users');
     const userIdQuery = query(usersRef, where('userId', '==', userId));
     const userIdSnapshot = await getDocs(userIdQuery);
     if (!userIdSnapshot.empty) {
+      SweetAlert2({ name: 'error', swaltext: '이미 사용 중인 사용자 ID입니다.'})
       throw new Error('이미 사용 중인 사용자 ID입니다.');
+      return false;
     }
 
     const q = query(usersRef, where('email', '==', email));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
+      SweetAlert2({ name: 'error', swaltext: '이미 사용 중인 이메일입니다.'})
       throw new Error('이미 사용 중인 이메일입니다.');
+      return false;
     }
 
     const nicknameQuery = query(usersRef, where('nickname', '==', nickname));
     const nicknameSnapshot = await getDocs(nicknameQuery);
 
     if (!nicknameSnapshot.empty) {
+      SweetAlert2({ name: 'error', swaltext: '이미 사용 중인 닉네임입니다.'})
       throw new Error('이미 사용 중인 닉네임입니다.');
+      return false;
     }
 
-    // Create the user in Firebase Auth
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Send verification email
-    await sendEmailVerification(user);
-
-    // Save the user information in Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      email,
-      userId,
-      nickname,
-      verified: false // Set this to true once email is verified
-    });
-
     console.log("User registered. Verification email sent.");
+    return true;
   } catch (error) {
     console.error("Error registering user:", error);
+    return false;
   }
 };
 
@@ -62,6 +57,7 @@ export default function RegisterPage() {
     const [enteredCode, setEnteredCode] = useState("");
     const [isVerified, setIsVerified] = useState(false);
     const [error, setError] = useState("");
+    const router = useRouter();
   
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -70,20 +66,22 @@ export default function RegisterPage() {
         setError("비밀번호가 일치하지 않습니다.");
         return;
       }
-  
+      const check = await registerUser(userId, email, nickname);
+      if (!check) {
+        return;
+      }
       try {
         // Generate and send a 6-digit verification code
+        setError("");
         const code = generateVerificationCode();
         setVerificationCode(code);
-        // Here you should integrate with an email sending service to send the `code` to the user's email
-        console.log(`인증번호가 이메일로 전송되었습니다: ${code}`);
         const templateParams = {
           to_email: email,
           verification_code: code,
         };
         await emailjs.send(service_id ||'', template_id||'', templateParams, user_id||'');
         // Ask the user to enter the code
-        alert("인증번호가 이메일로 전송되었습니다. 확인 후 입력해주세요.");
+        SweetAlert2({ name: 'info', swaltext: '인증번호가 이메일로 전송되었습니다.'})
       } catch (error: unknown) {
         if (error instanceof Error) {
           setError("회원가입 실패: " + error.message);
@@ -96,11 +94,24 @@ export default function RegisterPage() {
     const handleVerification = async () => {
       if (enteredCode === verificationCode) {
         setIsVerified(true);
-        alert("이메일 인증이 완료되었습니다!");
+        SweetAlert2({ name: 'success', swaltext: '이메일 인증이 완료되었습니다!'})
         try {
-          await registerUser(userId, email, password, nickname);
-          alert("회원가입이 완료되었습니다!");
-          
+          // registerUser가 성공적으로 실행되면 true 반환
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+    
+          // Send verification email
+          await sendEmailVerification(user);
+    
+          // Save the user information in Firestore
+          await setDoc(doc(db, "users", user.uid), {
+            email,
+            userId,
+            nickname,
+            verified: false // Set this to true once email is verified
+          });
+          SweetAlert2({ name: 'success', swaltext: '회원가입이 완료되었습니다!'})
+          router.push(`/`); // 회원가입 성공 후 이동
         } catch (error: unknown) {
           if (error instanceof Error) {
             setError("회원가입 실패: " + error.message);

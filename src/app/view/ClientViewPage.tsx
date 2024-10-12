@@ -9,6 +9,8 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { formatDate } from '@/utils/uttls';
 import Icon from '../component/Icon';
 import LoadingSpinner from '../component/LoadingSpinner';
+import SweetAlert2 from '../component/sweetalert2';
+import Swal from 'sweetalert2';
 
 const ClientViewPage = () => {
   const router = useRouter();
@@ -171,7 +173,7 @@ const ClientViewPage = () => {
       if (user && user?.uid=== boards?.userId) { // Check if the logged-in user's uid matches
         router.push(`/modify?index=${board.index}`);
     } else {
-        alert('수정할 권한이 없습니다.'); // Alert for no permission
+        SweetAlert2({ name: 'warning', swaltext: '수정할 권한이 없습니다.'})
     }
     }
   };
@@ -179,14 +181,22 @@ const ClientViewPage = () => {
   const handleDelete = async () => {
       if (board) {
           if (user && user?.uid === boards?.userId) { 
-            const confirmDelete = window.confirm('정말로 삭제하시겠습니까?');
-            if (confirmDelete) {
+            const confirmDelete = await Swal.fire({
+              title: '삭제 확인',
+              text: '정말로 삭제하시겠습니까?',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: '삭제',
+              cancelButtonText: '취소',
+            })
+            if (confirmDelete.isConfirmed) {
               const q = query(collection(db, 'boards'), where('index', '==', Number(board.index)));
               const querySnapshot = await getDocs(q);
               try {
                   if (!querySnapshot.empty) {
                       const boardDoc = querySnapshot.docs[0].ref;
                       await deleteDoc(boardDoc);
+                      SweetAlert2({ name: 'success', swaltext: '삭제되었습니다.'})
                       router.push('/');
                   } else {
                       console.error('게시글을 찾을 수 없습니다.');
@@ -195,10 +205,10 @@ const ClientViewPage = () => {
                   console.error('게시글 삭제 중 오류 발생:', error);
               }
             } else {
-                alert('삭제가 취소되었습니다.'); // Alert for no permission
+              SweetAlert2({ name: 'info', swaltext: '삭제가 취소되었습니다.'})
             }
           } else {
-            alert('삭제할 권한이 없습니다.'); // Alert for no permission
+            SweetAlert2({ name: 'warning', swaltext: '삭제할 권한이 없습니다.'})
         }
       }
   };
@@ -206,8 +216,8 @@ const ClientViewPage = () => {
   const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!commentContent.trim()) {
-        alert('댓글 내용을 입력해 주세요.');
-        return;
+      SweetAlert2({ name: 'info', swaltext: '댓글 내용을 입력해 주세요.'})
+      return;
     }
 
     const newComment: Comment = {
@@ -391,27 +401,36 @@ const ClientViewPage = () => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    const isConfirmed = window.confirm("정말 이 답글을 삭제하시겠습니까?");
-    
-    if (!isConfirmed) {
-        return; 
-    }
-    const updatedComments = deleteCommentById(comments, commentId);
+    // const isConfirmed = window.confirm("정말 이 답글을 삭제하시겠습니까?");
+    const confirmDelete = await Swal.fire({
+      title: '삭제 확인',
+      text: '정말로 삭제하시겠습니까?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '삭제',
+      cancelButtonText: '취소',
+    })
+    if (confirmDelete.isConfirmed) {
+      const updatedComments = deleteCommentById(comments, commentId);
 
-    // 'boards' 컬렉션에서 해당 게시글을 가져오기
-    const q = query(collection(db, 'boards'), where('index', '==', Number(index)));
-    const querySnapshot = await getDocs(q);
+      // 'boards' 컬렉션에서 해당 게시글을 가져오기
+      const q = query(collection(db, 'boards'), where('index', '==', Number(index)));
+      const querySnapshot = await getDocs(q);
 
-    try {
-        if (!querySnapshot.empty) {
-            const boardDoc = querySnapshot.docs[0].ref;
+      try {
+          if (!querySnapshot.empty) {
+              const boardDoc = querySnapshot.docs[0].ref;
 
-            // Firestore에 게시글 업데이트
-            await updateDoc(boardDoc, { comments: updatedComments });
-            setComments(updatedComments); // 상태 갱신
-        }
-    } catch (error) {
-        console.error('댓글 삭제 중 오류 발생:', error);
+              // Firestore에 게시글 업데이트
+              await updateDoc(boardDoc, { comments: updatedComments });
+              setComments(updatedComments); // 상태 갱신
+              SweetAlert2({ name: 'success', swaltext: '삭제되었습니다.'})
+          }
+      } catch (error) {
+          console.error('댓글 삭제 중 오류 발생:', error);
+      }
+    } else {
+      SweetAlert2({ name: 'info', swaltext: '삭제가 취소되었습니다.'})
     }
   };
 

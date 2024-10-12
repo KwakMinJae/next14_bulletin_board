@@ -7,6 +7,7 @@ import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/fire
 import { db } from '../../../firebaseConfig';
 import { Board } from '@/types/types';
 import LoadingSpinner from '../component/LoadingSpinner';
+import SweetAlert2 from '../component/sweetalert2';
 
 const ClientModifyPage = () => {
   const [board, setBoard] = useState<Board | null>(null);
@@ -44,7 +45,7 @@ const ClientModifyPage = () => {
       if (!querySnapshot.empty) {
         const boardRef = doc(db, 'boards', querySnapshot.docs[0].id); // 업데이트할 문서 참조
         await updateDoc(boardRef, updatedBoard); // Firestore에 게시글 업데이트
-        alert("수정되었습니다.")
+        SweetAlert2({ name: 'success', swaltext: '수정되었습니다.'})
         router.push(`/view?index=${index}`);
       }
     }

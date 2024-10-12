@@ -2,14 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getBoardsFromLocalStorage, setBoardsToLocalStorage } from '../../utils/storage';
 import { Board } from '../../types/types';
-import Link from 'next/link';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, addDoc, getDocs, getDoc, doc } from 'firebase/firestore';
-import { db, auth, storage } from '../../../firebaseConfig'; // Firestore 추가
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, auth } from '../../../firebaseConfig'; // Firestore 추가
 import { recordDate, fileToBase64 } from '@/utils/uttls';
+import SweetAlert2 from '../component/sweetalert2';
 
 export default function WritePage() {
   const [subject, setSubject] = useState('');
@@ -133,7 +131,6 @@ export default function WritePage() {
       };
 
       // 새로운 게시글 추가 후 로컬스토리지 업데이트
-      // setBoardsToLocalStorage([...boards, newBoard]);
       await addDoc(collection(db, 'boards'), newBoard);
 
       // 새로 작성된 게시글로 이동

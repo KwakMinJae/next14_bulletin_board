@@ -11,13 +11,11 @@ import {
   getFilteredRowModel, // 필터링 관련 로우 모델 추가
   FilterFn,
 } from "@tanstack/react-table";
-import { getBoardsFromLocalStorage } from "../utils/storage";
 import { Board } from "../types/types";
 import Link from "next/link";
 import { auth, db } from "../../firebaseConfig";
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc, collection, getDocs } from "firebase/firestore"; // Firestore에서 데이터를 가져오기 위한 함수
-import Icon from "./component/Icon";
 import LoadingSpinner from "./component/LoadingSpinner";
 
 // 테이블 컬럼 정의
