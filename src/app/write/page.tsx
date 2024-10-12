@@ -37,30 +37,6 @@ export default function WritePage() {
 
     return () => unsubscribe();
   }, []);
-  
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const files = Array.from(e.target.files || []);
-  //   // setAttachments(files);
-
-  //   // // Create previews for the files
-  //   // const previews = files.map((file) => {
-  //   //   return URL.createObjectURL(file);
-  //   // });
-  //   // setAttachmentPreviews(previews);
-  //     // 이미지 또는 비디오만 허용
-  //   const validFiles = files.filter((file) => file.type.startsWith('image/') || file.type.startsWith('video/'));
-
-  //   if (validFiles.length !== files.length) {
-  //     setError('이미지 또는 비디오 형식만 첨부할 수 있습니다.');
-  //     return;
-  //   }
-
-  //   setAttachments(validFiles);
-
-  //   // Create previews for the valid files
-  //   const previews = validFiles.map((file) => URL.createObjectURL(file));
-  //   setAttachmentPreviews(previews);
-  // };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -72,13 +48,7 @@ export default function WritePage() {
       return;
     }
 
-    // 파일을 Base64로 변환하여 미리보기
     try {
-      // const previews = await Promise.all(validFiles.map(file => fileToBase64(file)));
-      // setAttachments(validFiles);
-      // setAttachmentPreviews(previews);
-      // setError(null);
-      
       const previews = await Promise.all(validFiles.map(file => fileToBase64(file)));
       setAttachments(prev => [...prev, ...validFiles]); // 새로운 파일을 추가
       setAttachmentPreviews(prev => [...prev, ...previews]); // 새로운 미리보기도 추가
@@ -162,17 +132,6 @@ export default function WritePage() {
                     />
                 </div>
                 <div>
-                  {/* <label>
-                    작성자:
-                    <input
-                      type="text"
-                      value={nickname}
-                      onChange={(e) => setWriter(e.target.value)}
-                    />
-                    <span>{nickname}</span>
-                  </label> */}
-                </div>
-                <div>
                   <label htmlFor='writeText' className="font-semibold">
                     내용
                   </label>
@@ -197,15 +156,6 @@ export default function WritePage() {
                   />
                 </div>
                 <div>
-                  {/* {attachmentPreviews.map((preview, index) => (
-                    <div key={index}>
-                      {attachments[index].type.startsWith('image') ? (
-                        <img src={preview} alt={`attachment-${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
-                      ) : (
-                        <video src={preview} controls style={{ maxWidth: '200px', maxHeight: '200px' }} />
-                      )}
-                    </div>
-                  ))} */}
                     {attachmentPreviews.map((preview, index) => (
                     <div key={index}>
                       <div className='flex'>
